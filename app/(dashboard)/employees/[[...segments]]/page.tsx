@@ -8,25 +8,25 @@ import { employeesDataSource, Employee, employeesCache } from '../../../../data/
 
 
 export default function EmployeesCrudPage() {
-  
-  const params = useParams();
-  const [employeeId] = params.segments ?? [];
-  
-  
-  
 
-  return (
-    <Crud<Employee>
-      dataSource={employeesDataSource}
-      dataSourceCache={employeesCache}
-      rootPath="/employees"
-      initialPageSize={25}
-      defaultValues={{ itemCount: 1 }}
-      pageTitles={{
-        show: `Employee ${employeeId}`,
-        create: 'New Employee',
-        edit: `Employee ${employeeId} - Edit`,
-      }}
-    />
-  );
+    const params = useParams();
+    const [employeeId] = params.segments ?? [];
+
+
+
+
+    return (
+        <Crud<Employee>
+            dataSource={employeesDataSource}
+            dataSourceCache={employeesCache}
+            rootPath="/employees"
+            initialPageSize={25}
+            defaultValues={{ itemCount: 1 }}
+            pageTitles={{
+                show: `Employee ${employeeId}`,
+                create: 'New Employee',
+                edit: `Employee ${employeeId} - Edit`,
+            }}
+        />
+    );
 }

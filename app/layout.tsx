@@ -10,26 +10,26 @@ import { auth } from '../auth';
 import theme from '../theme';
 
 export const metadata = {
-  title: 'My Toolpad Core Next.js App',
-  description: 'This is a sample app built with Toolpad Core and Next.js',
+    title: 'My Toolpad Core Next.js App',
+    description: 'This is a sample app built with Toolpad Core and Next.js',
 };
 
 const NAVIGATION: Navigation = [
-  {
-    kind: 'header',
-    title: 'Main items',
-  },
-  {
-    segment: '',
-    title: 'Dashboard',
-    icon: <DashboardIcon />,
-  },
-  {
-    segment: 'employees',
-    title: 'Employees',
-    icon: <PersonIcon />,
-    pattern: 'employees{/:employeeId}*',
-  },
+    {
+        kind: 'header',
+        title: 'Main items',
+    },
+    {
+        segment: '',
+        title: 'Dashboard',
+        icon: <DashboardIcon />,
+    },
+    {
+        segment: 'employees',
+        title: 'Employees',
+        icon: <PersonIcon />,
+        pattern: 'employees{/:employeeId}*',
+    },
 ];
 
 const BRANDING = {
@@ -38,33 +38,33 @@ const BRANDING = {
 
 
 const AUTHENTICATION = {
-  signIn,
-  signOut,
+    signIn,
+    signOut,
 };
 
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
-  const session = await auth();
+    const session = await auth();
 
-  return (
-    <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
-      <body>
-        <SessionProvider session={session}>
-          <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          
-            <NextAppProvider
-              navigation={NAVIGATION}
-              branding={BRANDING}
-              session={session}
-              authentication={AUTHENTICATION}
-              theme={theme}
-            >
-              {props.children}
-            </NextAppProvider>
-            
-          </AppRouterCacheProvider>
-        </SessionProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
+            <body>
+                <SessionProvider session={session}>
+                    <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+                    
+                        <NextAppProvider
+                            navigation={NAVIGATION}
+                            branding={BRANDING}
+                            session={session}
+                            authentication={AUTHENTICATION}
+                            theme={theme}
+                        >
+                            {props.children}
+                        </NextAppProvider>
+                      
+                    </AppRouterCacheProvider>
+                </SessionProvider>
+            </body>
+        </html>
+    );
 }
