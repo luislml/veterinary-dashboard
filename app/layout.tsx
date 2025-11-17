@@ -25,15 +25,14 @@ const NAVIGATION: Navigation = [
         icon: <DashboardIcon />,
     },
     {
-        segment: 'employees',
-        title: 'Employees',
+        segment: 'users',
+        title: 'Usuarios',
         icon: <PersonIcon />,
-        pattern: 'employees{/:employeeId}*',
     },
 ];
 
 const BRANDING = {
-  title: 'My Toolpad Core Next.js App',
+  title: 'Veterinaria APP',
 };
 
 
