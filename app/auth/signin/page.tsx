@@ -132,7 +132,7 @@ export default function SignIn() {
                     }}
                 >
                     <Image
-                        src="/images/login-bg.svg"
+                        src="/images/login-bg2.svg"
                         alt="Ilustración de login"
                         width={500}
                         height={400}
@@ -212,11 +212,6 @@ export default function SignIn() {
                                 onBlur={() => setEmailFocused(false)}
                                 disabled={loading}
                                 placeholder="correo@ejemplo.com"
-                                sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: '8px'
-                                    },
-                                }}
                                 error={emailError ? true : false}
                                 helperText={emailError ?? ''}
                             />
@@ -234,11 +229,6 @@ export default function SignIn() {
                                 label="Contraseña"
                                 placeholder="********"
                                 size="small"
-                                sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: '8px'
-                                    },
-                                }}
                                 error={passwordError ? true : false}
                                 helperText={passwordError ?? ''}
                                 InputProps={{
@@ -265,7 +255,6 @@ export default function SignIn() {
                             <Button
                                 type="submit"
                                 variant="contained"
-                                sx={{ borderRadius: '8px' }}
                                 disabled={loading}
                             >
                                 {loading ? (

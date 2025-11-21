@@ -8,25 +8,27 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "react": "^19",
-        "react-dom": "^19",
-        "@toolpad/core": "0.16.0",
-        "@mui/material": "^7",
-        "@mui/material-nextjs": "^7",
-        "@mui/icons-material": "^7",
         "@emotion/react": "^11",
         "@emotion/styled": "^11",
-        "zod": "^3.24.2",
+        "@mui/icons-material": "^7",
+        "@mui/material": "^7",
+        "@mui/material-nextjs": "^7",
+        "@toolpad/core": "0.16.0",
+        "material-ui-confirm": "^4.0.0",
         "next": "^15",
-        "next-auth": "5.0.0-beta.25"
+        "next-auth": "5.0.0-beta.25",
+        "notistack": "^3.0.2",
+        "react": "^19",
+        "react-dom": "^19",
+        "zod": "^3.24.2"
     },
     "devDependencies": {
-        "typescript": "^5",
+        "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "eslint": "^8",
         "eslint-config-next": "^15",
-        "@types/node": "^20"
+        "typescript": "^5"
     },
     "tabWidth": 4
 }

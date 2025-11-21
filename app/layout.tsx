@@ -3,6 +3,7 @@ import { NextAppProvider } from '@toolpad/core/nextjs';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
+import StyleIcon from '@mui/icons-material/Style';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -10,19 +11,24 @@ import { auth } from '../auth';
 import theme from '../theme';
 
 export const metadata = {
-    title: 'My Toolpad Core Next.js App',
-    description: 'This is a sample app built with Toolpad Core and Next.js',
+    title: 'Dashboard Veterinaria',
+    description: 'Dashboard Veterinaria',
 };
 
 const NAVIGATION: Navigation = [
     {
         kind: 'header',
-        title: 'Main items',
+        title: 'Menu Principal',
     },
     {
         segment: '',
         title: 'Dashboard',
         icon: <DashboardIcon />,
+    },
+    {
+        segment: 'plans',
+        title: 'Planes',
+        icon: <StyleIcon />,
     },
     {
         segment: 'users',
@@ -41,6 +47,9 @@ const AUTHENTICATION = {
     signOut,
 };
 
+const LOCALE_TEXT = {
+    accountSignOutLabel: 'Salir',
+};
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
     const session = await auth();
@@ -57,6 +66,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                             session={session}
                             authentication={AUTHENTICATION}
                             theme={theme}
+                            localeText={LOCALE_TEXT}
                         >
                             {props.children}
                         </NextAppProvider>
