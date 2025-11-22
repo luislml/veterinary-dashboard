@@ -35,7 +35,6 @@ import { PageContainer } from '@toolpad/core/PageContainer';
 import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
-import { ConfirmProvider } from "material-ui-confirm";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -209,14 +208,7 @@ function PlansPage() {
             title: "Eliminar Plan",
             description: "¿Estás seguro de que deseas eliminar este plan?",
             confirmationText: "Eliminar",
-            cancellationText: "Cancelar",
-            confirmationButtonProps: {
-                color: "primary",
-                variant: "contained",
-            },
-            cancellationButtonProps: {
-                color: "error",
-            },
+            cancellationText: "Cancelar"
         });
     
         if (!confirmed) return;
@@ -270,7 +262,6 @@ function PlansPage() {
                             <StyledTableCell>Nombre</StyledTableCell>
                             <StyledTableCell>Descripción</StyledTableCell>
                             <StyledTableCell>Tipo</StyledTableCell>
-                            <StyledTableCell>Fecha de Creación</StyledTableCell>
                             <StyledTableCell align="right">Acciones</StyledTableCell>
                         </TableRow>
                     </TableHead>
@@ -297,11 +288,6 @@ function PlansPage() {
                                     <StyledTableCell>{plan.description}</StyledTableCell>
                                     <StyledTableCell>
                                         {PLAN_TYPES.find(t => t.value === plan.type)?.label || plan.type}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        {plan.created_at
-                                            ? new Date(plan.created_at).toLocaleDateString()
-                                            : '-'}
                                     </StyledTableCell>
                                     <StyledTableCell align="right">
                                         <Tooltip title="Editar" placement="top">
@@ -408,10 +394,8 @@ function PlansPage() {
 
 export default function IntegrationNotistack() {
     return (
-        <ConfirmProvider>
-            <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-                <PlansPage />
-            </SnackbarProvider>
-        </ConfirmProvider>
+        <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+            <PlansPage />
+        </SnackbarProvider>
     );
 }

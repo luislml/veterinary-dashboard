@@ -9,6 +9,7 @@ import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
 import { auth } from '../auth';
 import theme from '../theme';
+import ConfirmProviderWrapper from './components/ConfirmProviderWrapper';
 
 export const metadata = {
     title: 'Dashboard Veterinaria',
@@ -57,6 +58,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     return (
         <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
             <body>
+                <ConfirmProviderWrapper>
                 <SessionProvider session={session}>
                     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
                     
@@ -73,6 +75,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                       
                     </AppRouterCacheProvider>
                 </SessionProvider>
+                </ConfirmProviderWrapper>
             </body>
         </html>
     );
