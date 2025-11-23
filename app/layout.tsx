@@ -6,6 +6,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import StyleIcon from '@mui/icons-material/Style';
 import PetsIcon from '@mui/icons-material/Pets';
 import PeopleIcon from '@mui/icons-material/People';
+import CategoryIcon from '@mui/icons-material/Category';
+import EmojiNatureIcon from '@mui/icons-material/EmojiNature';
+import StarIcon from '@mui/icons-material/Star';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -47,6 +51,27 @@ const NAVIGATION: Navigation = [
         segment: 'clients',
         title: 'Clientes',
         icon: <PeopleIcon />,
+    },
+    {
+        title: 'Mascotas',
+        icon: <EmojiNatureIcon />,
+        children: [
+            {
+                segment: 'type-pets',
+                title: 'Tipos de mascotas',
+                icon: <CategoryIcon />,
+            },
+            {
+                segment: 'races',
+                title: 'Razas',
+                icon: <StarIcon />,
+            },
+            {
+                segment: 'pets',
+                title: 'Registro de mascotas',
+                icon: <AssignmentIcon />,
+            },
+        ],
     },
 ];
 
