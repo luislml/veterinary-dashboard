@@ -5,6 +5,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import StyleIcon from '@mui/icons-material/Style';
 import PetsIcon from '@mui/icons-material/Pets';
+import PeopleIcon from '@mui/icons-material/People';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -41,6 +42,11 @@ const NAVIGATION: Navigation = [
         segment: 'veterinaries',
         title: 'Veterinarias',
         icon: <PetsIcon />,
+    },
+    {
+        segment: 'clients',
+        title: 'Clientes',
+        icon: <PeopleIcon />,
     },
 ];
 

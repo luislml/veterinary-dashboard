@@ -27,6 +27,8 @@ import {
     InputLabel,
     FormHelperText,
     Tooltip,
+    Chip,
+    OutlinedInput,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -55,12 +57,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-interface Veterinary {
+interface Client {
     id: number;
     name: string;
-    plan_id: number;
-    user_id: number;
-    plan?: {
+    last_name: string;
+    phone: string;
+    address: string;
+    veterinary_id?: number | number[];
+    veterinaries?: {
+        id: number;
+        name: string;
+    }[];
+    veterinary?: {
         id: number;
         name: string;
     };
@@ -68,18 +76,12 @@ interface Veterinary {
     updated_at?: string;
 }
 
-interface Plan {
+interface Veterinary {
     id: number;
     name: string;
 }
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-}
-
-function VeterinariesPage() {
+function ClientsPage() {
 
     const { enqueueSnackbar } = useSnackbar();
     const handleClickVariant = (variant: VariantType) => () => {
@@ -87,16 +89,20 @@ function VeterinariesPage() {
         enqueueSnackbar('This is a success message!', { variant });
     };
 
+    const [clients, setClients] = React.useState<Client[]>([]);
     const [veterinaries, setVeterinaries] = React.useState<Veterinary[]>([]);
-    const [plans, setPlans] = React.useState<Plan[]>([]);
-    const [users, setUsers] = React.useState<User[]>([]);
     const [loading, setLoading] = React.useState(true);
-    const [loadingPlans, setLoadingPlans] = React.useState(false);
-    const [loadingUsers, setLoadingUsers] = React.useState(false);
+    const [loadingVeterinaries, setLoadingVeterinaries] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [openModal, setOpenModal] = React.useState(false);
-    const [editingVeterinary, setEditingVeterinary] = React.useState<Veterinary | null>(null);
-    const [formData, setFormData] = React.useState({ name: '', plan_id: '', user_id: '' });
+    const [editingClient, setEditingClient] = React.useState<Client | null>(null);
+    const [formData, setFormData] = React.useState({ 
+        name: '', 
+        last_name: '', 
+        phone: '', 
+        address: '', 
+        veterinary_id: [] as number[]
+    });
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
     const [page, setPage] = React.useState(1);
@@ -104,76 +110,11 @@ function VeterinariesPage() {
     const [total, setTotal] = React.useState(0);
     const confirm = useConfirm();
 
-    // Cargar planes
-    const loadPlans = React.useCallback(async () => {
-        try {
-            setLoadingPlans(true);
-            const response = await fetch(`/api/plans?page=1&per_page=100`);
-            
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('Respuesta inválida del servidor');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar planes');
-            }
-
-            if (data.data) {
-                setPlans(data.data);
-            } else if (Array.isArray(data)) {
-                setPlans(data);
-            } else {
-                setPlans([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar planes:', err);
-            setPlans([]);
-        } finally {
-            setLoadingPlans(false);
-        }
-    }, []);
-
-    // Cargar usuarios
-    const loadUsers = React.useCallback(async () => {
-        try {
-            setLoadingUsers(true);
-            const response = await fetch(`/api/users?page=1&per_page=100`);
-            
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('Respuesta inválida del servidor');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar usuarios');
-            }
-
-            if (data.data) {
-                setUsers(data.data);
-            } else if (Array.isArray(data)) {
-                setUsers(data);
-            } else {
-                setUsers([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar usuarios:', err);
-            setUsers([]);
-        } finally {
-            setLoadingUsers(false);
-        }
-    }, []);
-
     // Cargar veterinarias
     const loadVeterinaries = React.useCallback(async () => {
         try {
-            setLoading(true);
-            setError(null);
-            const response = await fetch(`/api/veterinaries?page=${page}&per_page=10`);
+            setLoadingVeterinaries(true);
+            const response = await fetch(`/api/veterinaries?page=1&per_page=100`);
             
             let data;
             try {
@@ -186,49 +127,94 @@ function VeterinariesPage() {
                 throw new Error(data.error || data.message || 'Error al cargar veterinarias');
             }
 
-            // Adaptar respuesta de Laravel
             if (data.data) {
                 setVeterinaries(data.data);
+            } else if (Array.isArray(data)) {
+                setVeterinaries(data);
+            } else {
+                setVeterinaries([]);
+            }
+        } catch (err) {
+            console.error('Error al cargar veterinarias:', err);
+            setVeterinaries([]);
+        } finally {
+            setLoadingVeterinaries(false);
+        }
+    }, []);
+
+    // Cargar clientes
+    const loadClients = React.useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`/api/clients?page=${page}&per_page=10`);
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Error al cargar clientes');
+            }
+
+            // Adaptar respuesta de Laravel
+            if (data.data) {
+                setClients(data.data);
                 setTotal(data?.meta?.total || data.data.length);
                 setTotalPages(data?.meta?.last_page || Math.ceil((data?.meta?.total || data.data.length) / 10));
             } else if (Array.isArray(data)) {
-                setVeterinaries(data);
+                setClients(data);
                 setTotal(data.length);
                 setTotalPages(Math.ceil(data.length / 10));
             } else {
-                setVeterinaries([]);
+                setClients([]);
                 setTotal(0);
                 setTotalPages(1);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error al cargar veterinarias');
-            setVeterinaries([]);
+            setError(err instanceof Error ? err.message : 'Error al cargar clientes');
+            setClients([]);
         } finally {
             setLoading(false);
         }
     }, [page]);
 
     React.useEffect(() => {
+        loadClients();
         loadVeterinaries();
-        loadPlans();
-        loadUsers();
-    }, [loadVeterinaries, loadPlans, loadUsers]);
+    }, [loadClients, loadVeterinaries]);
 
     // Abrir modal para crear
     const handleCreate = () => {
-        setEditingVeterinary(null);
-        setFormData({ name: '', plan_id: '', user_id: '' });
+        setEditingClient(null);
+        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: [] });
         setFormErrors({});
         setOpenModal(true);
     };
 
     // Abrir modal para editar
-    const handleEdit = (veterinary: Veterinary) => {
-        setEditingVeterinary(veterinary);
+    const handleEdit = (client: Client) => {
+        setEditingClient(client);
+        
+        // Manejar veterinary_id como array o número único
+        let veterinaryIds: number[] = [];
+        if (Array.isArray(client.veterinary_id)) {
+            veterinaryIds = client.veterinary_id;
+        } else if (client.veterinaries && client.veterinaries.length > 0) {
+            veterinaryIds = client.veterinaries.map(v => v.id);
+        } else if (client.veterinary_id) {
+            veterinaryIds = [client.veterinary_id];
+        }
+        
         setFormData({ 
-            name: veterinary.name, 
-            plan_id: veterinary.plan?.id?.toString() || '', 
-            user_id: veterinary.user_id?.toString() || '' 
+            name: client.name, 
+            last_name: client.last_name || '', 
+            phone: client.phone || '', 
+            address: client.address || '', 
+            veterinary_id: veterinaryIds
         });
         setFormErrors({});
         setOpenModal(true);
@@ -237,24 +223,26 @@ function VeterinariesPage() {
     // Cerrar modal
     const handleCloseModal = () => {
         setOpenModal(false);
-        setEditingVeterinary(null);
-        setFormData({ name: '', plan_id: '', user_id: '' });
+        setEditingClient(null);
+        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: [] });
         setFormErrors({});
     };
 
-    // Guardar veterinaria (crear o actualizar)
+    // Guardar cliente (crear o actualizar)
     const handleSave = async () => {
         setFormErrors({});
         setSubmitting(true);
 
         try {
-            const url = editingVeterinary ? `/api/veterinaries/${editingVeterinary.id}` : '/api/veterinaries';
-            const method = editingVeterinary ? 'PUT' : 'POST';
+            const url = editingClient ? `/api/clients/${editingClient.id}` : '/api/clients';
+            const method = editingClient ? 'PUT' : 'POST';
 
             const dataToSend = {
                 name: formData.name,
-                plan_id: parseInt(formData.plan_id),
-                user_id: parseInt(formData.user_id),
+                last_name: formData.last_name,
+                phone: formData.phone,
+                address: formData.address,
+                veterinary_id: formData.veterinary_id,
             };
 
             const response = await fetch(url, {
@@ -271,29 +259,29 @@ function VeterinariesPage() {
                 if (data.errors) {
                     setFormErrors(data.errors);
                 } else {
-                    setFormErrors({ general: data.message || data.error || 'Error al guardar veterinaria' });
+                    setFormErrors({ general: data.message || data.error || 'Error al guardar cliente' });
                 }
                 return;
             }
 
             handleCloseModal();
-            loadVeterinaries();
+            loadClients();
             // Show success snackbar
-            enqueueSnackbar(editingVeterinary ? 'Veterinaria actualizada correctamente' : 'Veterinaria creada correctamente', { variant: 'success' });
+            enqueueSnackbar(editingClient ? 'Cliente actualizado correctamente' : 'Cliente creado correctamente', { variant: 'success' });
         } catch (err) {
-            setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar veterinaria' });
+            setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar cliente' });
             // Show error snackbar
-            enqueueSnackbar(editingVeterinary ? 'Error al actualizar veterinaria' : 'Error al crear veterinaria', { variant: 'error' });
+            enqueueSnackbar(editingClient ? 'Error al actualizar cliente' : 'Error al crear cliente', { variant: 'error' });
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Eliminar veterinaria
-    const handleDelete = async (veterinaryId: number) => {
+    // Eliminar cliente
+    const handleDelete = async (clientId: number) => {
         const { confirmed, reason } = await confirm({
-            title: "Eliminar Veterinaria",
-            description: "¿Estás seguro de que deseas eliminar esta veterinaria?",
+            title: "Eliminar Cliente",
+            description: "¿Estás seguro de que deseas eliminar este cliente?",
             confirmationText: "Eliminar",
             cancellationText: "Cancelar"
         });
@@ -302,36 +290,36 @@ function VeterinariesPage() {
         // console.log(reason);
 
         try {
-            const response = await fetch(`/api/veterinaries/${veterinaryId}`, {
+            const response = await fetch(`/api/clients/${clientId}`, {
                 method: 'DELETE',
             });
 
             if (!response.ok) {
                 const data = await response.json();
                 // Show error snackbar
-                enqueueSnackbar(data.error || data.message || 'Error al eliminar veterinaria', { variant: 'error' });
+                enqueueSnackbar(data.error || data.message || 'Error al eliminar cliente', { variant: 'error' });
                 return;
             }
 
-            loadVeterinaries();
+            loadClients();
             // Show success snackbar
-            enqueueSnackbar('Veterinaria eliminada correctamente', { variant: 'success' });
+            enqueueSnackbar('Cliente eliminado correctamente', { variant: 'success' });
         } catch (err) {
             // Show error snackbar
-            enqueueSnackbar(err instanceof Error ? err.message : 'Error al eliminar veterinaria', { variant: 'error' });
+            enqueueSnackbar(err instanceof Error ? err.message : 'Error al eliminar cliente', { variant: 'error' });
         }
     };
 
     return (
         <PageContainer>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5">Lista de Veterinarias</Typography>
+                <Typography variant="h5">Lista de Clientes</Typography>
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={handleCreate}
                 >
-                    Nueva Veterinaria
+                    Nuevo Cliente
                 </Button>
             </Box>
 
@@ -347,38 +335,48 @@ function VeterinariesPage() {
                         <TableRow>
                             <StyledTableCell>ID</StyledTableCell>
                             <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Plan</StyledTableCell>
+                            <StyledTableCell>Apellido</StyledTableCell>
+                            <StyledTableCell>Teléfono</StyledTableCell>
+                            <StyledTableCell>Dirección</StyledTableCell>
+                            <StyledTableCell>Veterinaria</StyledTableCell>
                             <StyledTableCell align="right">Acciones</StyledTableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={5} align="center">
+                                <TableCell colSpan={7} align="center">
                                     <CircularProgress />
                                 </TableCell>
                             </TableRow>
-                        ) : veterinaries.length === 0 ? (
+                        ) : clients.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} align="center">
+                                <TableCell colSpan={7} align="center">
                                     <Typography variant="body2" color="text.secondary">
-                                        No hay veterinarias disponibles
+                                        No hay clientes disponibles
                                     </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            veterinaries.map((veterinary) => (
-                                <StyledTableRow key={veterinary.id}>
-                                    <StyledTableCell>{veterinary.id}</StyledTableCell>
-                                    <StyledTableCell>{veterinary.name}</StyledTableCell>
+                            clients.map((client) => (
+                                <StyledTableRow key={client.id}>
+                                    <StyledTableCell>{client.id}</StyledTableCell>
+                                    <StyledTableCell>{client.name}</StyledTableCell>
+                                    <StyledTableCell>{client.last_name || '-'}</StyledTableCell>
+                                    <StyledTableCell>{client.phone || '-'}</StyledTableCell>
+                                    <StyledTableCell>{client.address || '-'}</StyledTableCell>
                                     <StyledTableCell>
-                                        {veterinary.plan?.name || `Plan ID: ${veterinary.plan_id}`}
+                                        {client.veterinaries && client.veterinaries.length > 0
+                                            ? client.veterinaries.map(v => v.name).join(', ')
+                                            : client.veterinary?.name || (Array.isArray(client.veterinary_id) 
+                                                ? client.veterinary_id.join(', ') 
+                                                : `Veterinaria ID: ${client.veterinary_id || '-'}`)}
                                     </StyledTableCell>
                                     <StyledTableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
-                                                onClick={() => handleEdit(veterinary)}
+                                                onClick={() => handleEdit(client)}
                                             >
                                                 <EditIcon />
                                             </IconButton>
@@ -386,7 +384,7 @@ function VeterinariesPage() {
                                         <Tooltip title="Eliminar" placement="top">
                                             <IconButton
                                                 size="small"
-                                                onClick={() => handleDelete(veterinary.id)}
+                                                onClick={() => handleDelete(client.id)}
                                                 color="error"
                                             >
                                                 <DeleteIcon />
@@ -414,7 +412,7 @@ function VeterinariesPage() {
             {/* Modal para crear/editar */}
             <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
                 <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }}>
-                    {editingVeterinary ? 'Editar Veterinaria' : 'Nueva Veterinaria'}
+                    {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
                 </DialogTitle>
                 <DialogContent dividers>
                     {formErrors.general && (
@@ -434,39 +432,76 @@ function VeterinariesPage() {
                         helperText={formErrors.name}
                         sx={{ mb: 2 }}
                     />
-                    <FormControl fullWidth size="small" error={!!formErrors.plan_id} sx={{ mb: 2 }}>
-                        <InputLabel>Plan</InputLabel>
+                    <TextField
+                        label="Apellido"
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        value={formData.last_name}
+                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                        error={!!formErrors.last_name}
+                        helperText={formErrors.last_name}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        label="Teléfono"
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        error={!!formErrors.phone}
+                        helperText={formErrors.phone}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        label="Dirección"
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={3}
+                        size="small"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        error={!!formErrors.address}
+                        helperText={formErrors.address}
+                        sx={{ mb: 2 }}
+                    />
+                    <FormControl fullWidth size="small" error={!!formErrors.veterinary_id} sx={{ mb: 2 }}>
+                        <InputLabel>Veterinarias</InputLabel>
                         <Select
-                            value={formData.plan_id}
-                            label="Plan"
-                            onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
-                            disabled={loadingPlans}
+                            multiple
+                            value={formData.veterinary_id}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData({ 
+                                    ...formData, 
+                                    veterinary_id: typeof value === 'string' 
+                                        ? value.split(',').map(v => parseInt(v.trim()))
+                                        : value as number[]
+                                });
+                            }}
+                            input={<OutlinedInput label="Veterinarias" />}
+                            renderValue={(selected) => (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                    {(selected as number[]).map((value) => {
+                                        const veterinary = veterinaries.find(v => v.id === value);
+                                        return veterinary ? (
+                                            <Chip key={value} label={veterinary.name} size="small" />
+                                        ) : null;
+                                    })}
+                                </Box>
+                            )}
+                            disabled={loadingVeterinaries}
                         >
-                            {plans.map((plan) => (
-                                <MenuItem key={plan.id} value={plan.id.toString()}>
-                                    {plan.name}
+                            {veterinaries.map((veterinary) => (
+                                <MenuItem key={veterinary.id} value={veterinary.id}>
+                                    {veterinary.name}
                                 </MenuItem>
                             ))}
                         </Select>
-                        {formErrors.plan_id && <FormHelperText>{formErrors.plan_id}</FormHelperText>}
-                        {loadingPlans && <FormHelperText>Cargando planes...</FormHelperText>}
-                    </FormControl>
-                    <FormControl fullWidth size="small" error={!!formErrors.user_id} sx={{ mb: 2 }}>
-                        <InputLabel>Usuario</InputLabel>
-                        <Select
-                            value={formData.user_id}
-                            label="Usuario"
-                            onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                            disabled={loadingUsers}
-                        >
-                            {users.map((user) => (
-                                <MenuItem key={user.id} value={user.id.toString()}>
-                                    {user.name} ({user.email})
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        {formErrors.user_id && <FormHelperText>{formErrors.user_id}</FormHelperText>}
-                        {loadingUsers && <FormHelperText>Cargando usuarios...</FormHelperText>}
+                        {formErrors.veterinary_id && <FormHelperText>{formErrors.veterinary_id}</FormHelperText>}
+                        {loadingVeterinaries && <FormHelperText>Cargando veterinarias...</FormHelperText>}
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
@@ -486,10 +521,8 @@ function VeterinariesPage() {
 export default function IntegrationNotistack() {
     return (
         <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-            <VeterinariesPage />
+            <ClientsPage />
         </SnackbarProvider>
     );
 }
-
-
 
