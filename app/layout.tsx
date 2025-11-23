@@ -4,6 +4,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import StyleIcon from '@mui/icons-material/Style';
+import PetsIcon from '@mui/icons-material/Pets';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -35,6 +36,11 @@ const NAVIGATION: Navigation = [
         segment: 'users',
         title: 'Usuarios',
         icon: <PersonIcon />,
+    },
+    {
+        segment: 'veterinaries',
+        title: 'Veterinarias',
+        icon: <PetsIcon />,
     },
 ];
 

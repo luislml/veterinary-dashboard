@@ -55,26 +55,31 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-interface User {
+interface Veterinary {
     id: number;
     name: string;
-    last_name: string;
-    phone: string;
-    email: string;
-    password?: string;
-    roles: string[];
+    plan_id: number;
+    user_id: number;
+    plan?: {
+        id: number;
+        name: string;
+    };
     created_at?: string;
     updated_at?: string;
 }
 
-// Opciones de rol
-const ROLE_OPTIONS = [
-    { value: 'admin', label: 'Administrador' },
-    { value: 'veterinary', label: 'Veterinario' },
-    { value: 'user', label: 'Usuario' },
-];
+interface Plan {
+    id: number;
+    name: string;
+}
 
-function UsersPage() {
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+function VeterinariesPage() {
 
     const { enqueueSnackbar } = useSnackbar();
     const handleClickVariant = (variant: VariantType) => () => {
@@ -82,19 +87,16 @@ function UsersPage() {
         enqueueSnackbar('This is a success message!', { variant });
     };
 
+    const [veterinaries, setVeterinaries] = React.useState<Veterinary[]>([]);
+    const [plans, setPlans] = React.useState<Plan[]>([]);
     const [users, setUsers] = React.useState<User[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [loadingPlans, setLoadingPlans] = React.useState(false);
+    const [loadingUsers, setLoadingUsers] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [openModal, setOpenModal] = React.useState(false);
-    const [editingUser, setEditingUser] = React.useState<User | null>(null);
-    const [formData, setFormData] = React.useState({ 
-        name: '', 
-        last_name: '', 
-        phone: '', 
-        email: '', 
-        password: '', 
-        role: '' 
-    });
+    const [editingVeterinary, setEditingVeterinary] = React.useState<Veterinary | null>(null);
+    const [formData, setFormData] = React.useState({ name: '', plan_id: '', user_id: '' });
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
     const [page, setPage] = React.useState(1);
@@ -102,12 +104,43 @@ function UsersPage() {
     const [total, setTotal] = React.useState(0);
     const confirm = useConfirm();
 
+    // Cargar planes
+    const loadPlans = React.useCallback(async () => {
+        try {
+            setLoadingPlans(true);
+            const response = await fetch(`/api/plans?page=1&per_page=100`);
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Error al cargar planes');
+            }
+
+            if (data.data) {
+                setPlans(data.data);
+            } else if (Array.isArray(data)) {
+                setPlans(data);
+            } else {
+                setPlans([]);
+            }
+        } catch (err) {
+            console.error('Error al cargar planes:', err);
+            setPlans([]);
+        } finally {
+            setLoadingPlans(false);
+        }
+    }, []);
+
     // Cargar usuarios
     const loadUsers = React.useCallback(async () => {
         try {
-            setLoading(true);
-            setError(null);
-            const response = await fetch(`/api/users?page=${page}&per_page=10`);
+            setLoadingUsers(true);
+            const response = await fetch(`/api/users?page=1&per_page=100`);
             
             let data;
             try {
@@ -120,50 +153,82 @@ function UsersPage() {
                 throw new Error(data.error || data.message || 'Error al cargar usuarios');
             }
 
-            // Adaptar respuesta de Laravel
             if (data.data) {
                 setUsers(data.data);
+            } else if (Array.isArray(data)) {
+                setUsers(data);
+            } else {
+                setUsers([]);
+            }
+        } catch (err) {
+            console.error('Error al cargar usuarios:', err);
+            setUsers([]);
+        } finally {
+            setLoadingUsers(false);
+        }
+    }, []);
+
+    // Cargar veterinarias
+    const loadVeterinaries = React.useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`/api/veterinaries?page=${page}&per_page=10`);
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Error al cargar veterinarias');
+            }
+
+            // Adaptar respuesta de Laravel
+            if (data.data) {
+                setVeterinaries(data.data);
                 setTotal(data?.meta?.total || data.data.length);
                 setTotalPages(data?.meta?.last_page || Math.ceil((data?.meta?.total || data.data.length) / 10));
             } else if (Array.isArray(data)) {
-                setUsers(data);
+                setVeterinaries(data);
                 setTotal(data.length);
                 setTotalPages(Math.ceil(data.length / 10));
             } else {
-                setUsers([]);
+                setVeterinaries([]);
                 setTotal(0);
                 setTotalPages(1);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error al cargar usuarios');
-            setUsers([]);
+            setError(err instanceof Error ? err.message : 'Error al cargar veterinarias');
+            setVeterinaries([]);
         } finally {
             setLoading(false);
         }
     }, [page]);
 
     React.useEffect(() => {
+        loadVeterinaries();
+        loadPlans();
         loadUsers();
-    }, [loadUsers]);
+    }, [loadVeterinaries, loadPlans, loadUsers]);
 
     // Abrir modal para crear
     const handleCreate = () => {
-        setEditingUser(null);
-        setFormData({ name: '', last_name: '', phone: '', email: '', password: '', role: '' });
+        setEditingVeterinary(null);
+        setFormData({ name: '', plan_id: '', user_id: '' });
         setFormErrors({});
         setOpenModal(true);
     };
 
     // Abrir modal para editar
-    const handleEdit = (user: User) => {
-        setEditingUser(user);
+    const handleEdit = (veterinary: Veterinary) => {
+        setEditingVeterinary(veterinary);
         setFormData({ 
-            name: user.name, 
-            last_name: user.last_name || '', 
-            phone: user.phone || '', 
-            email: user.email, 
-            password: '', // No mostrar password al editar
-            role: user.roles[0] || '' 
+            name: veterinary.name, 
+            plan_id: veterinary.plan_id?.toString() || '', 
+            user_id: veterinary.user_id?.toString() || '' 
         });
         setFormErrors({});
         setOpenModal(true);
@@ -172,33 +237,25 @@ function UsersPage() {
     // Cerrar modal
     const handleCloseModal = () => {
         setOpenModal(false);
-        setEditingUser(null);
-        setFormData({ name: '', last_name: '', phone: '', email: '', password: '', role: '' });
+        setEditingVeterinary(null);
+        setFormData({ name: '', plan_id: '', user_id: '' });
         setFormErrors({});
     };
 
-    // Guardar usuario (crear o actualizar)
+    // Guardar veterinaria (crear o actualizar)
     const handleSave = async () => {
         setFormErrors({});
         setSubmitting(true);
 
         try {
-            const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users';
-            const method = editingUser ? 'PUT' : 'POST';
+            const url = editingVeterinary ? `/api/veterinaries/${editingVeterinary.id}` : '/api/veterinaries';
+            const method = editingVeterinary ? 'PUT' : 'POST';
 
-            // Preparar datos para enviar
-            const dataToSend: any = {
+            const dataToSend = {
                 name: formData.name,
-                last_name: formData.last_name,
-                phone: formData.phone,
-                email: formData.email,
-                role: formData.role,
+                plan_id: parseInt(formData.plan_id),
+                user_id: parseInt(formData.user_id),
             };
-
-            // Solo incluir password si no está vacío (para edición) o si es creación
-            if (!editingUser || formData.password) {
-                dataToSend.password = formData.password;
-            }
 
             const response = await fetch(url, {
                 method,
@@ -214,29 +271,29 @@ function UsersPage() {
                 if (data.errors) {
                     setFormErrors(data.errors);
                 } else {
-                    setFormErrors({ general: data.message || data.error || 'Error al guardar usuario' });
+                    setFormErrors({ general: data.message || data.error || 'Error al guardar veterinaria' });
                 }
                 return;
             }
 
             handleCloseModal();
-            loadUsers();
+            loadVeterinaries();
             // Show success snackbar
-            enqueueSnackbar(editingUser ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente', { variant: 'success' });
+            enqueueSnackbar(editingVeterinary ? 'Veterinaria actualizada correctamente' : 'Veterinaria creada correctamente', { variant: 'success' });
         } catch (err) {
-            setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar usuario' });
+            setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar veterinaria' });
             // Show error snackbar
-            enqueueSnackbar(editingUser ? 'Error al actualizar usuario' : 'Error al crear usuario', { variant: 'error' });
+            enqueueSnackbar(editingVeterinary ? 'Error al actualizar veterinaria' : 'Error al crear veterinaria', { variant: 'error' });
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Eliminar usuario
-    const handleDelete = async (userId: number) => {
+    // Eliminar veterinaria
+    const handleDelete = async (veterinaryId: number) => {
         const { confirmed, reason } = await confirm({
-            title: "Eliminar Usuario",
-            description: "¿Estás seguro de que deseas eliminar este usuario?",
+            title: "Eliminar Veterinaria",
+            description: "¿Estás seguro de que deseas eliminar esta veterinaria?",
             confirmationText: "Eliminar",
             cancellationText: "Cancelar"
         });
@@ -245,36 +302,36 @@ function UsersPage() {
         // console.log(reason);
 
         try {
-            const response = await fetch(`/api/users/${userId}`, {
+            const response = await fetch(`/api/veterinaries/${veterinaryId}`, {
                 method: 'DELETE',
             });
 
             if (!response.ok) {
                 const data = await response.json();
                 // Show error snackbar
-                enqueueSnackbar(data.error || data.message || 'Error al eliminar usuario', { variant: 'error' });
+                enqueueSnackbar(data.error || data.message || 'Error al eliminar veterinaria', { variant: 'error' });
                 return;
             }
 
-            loadUsers();
+            loadVeterinaries();
             // Show success snackbar
-            enqueueSnackbar('Usuario eliminado correctamente', { variant: 'success' });
+            enqueueSnackbar('Veterinaria eliminada correctamente', { variant: 'success' });
         } catch (err) {
             // Show error snackbar
-            enqueueSnackbar(err instanceof Error ? err.message : 'Error al eliminar usuario', { variant: 'error' });
+            enqueueSnackbar(err instanceof Error ? err.message : 'Error al eliminar veterinaria', { variant: 'error' });
         }
     };
 
     return (
         <PageContainer>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5">Lista de Usuarios</Typography>
+                <Typography variant="h5">Lista de Veterinarias</Typography>
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={handleCreate}
                 >
-                    Nuevo Usuario
+                    Nueva Veterinaria
                 </Button>
             </Box>
 
@@ -290,44 +347,38 @@ function UsersPage() {
                         <TableRow>
                             <StyledTableCell>ID</StyledTableCell>
                             <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Apellido</StyledTableCell>
-                            <StyledTableCell>Teléfono</StyledTableCell>
-                            <StyledTableCell>Email</StyledTableCell>
-                            <StyledTableCell>Rol</StyledTableCell>
+                            <StyledTableCell>Plan</StyledTableCell>
                             <StyledTableCell align="right">Acciones</StyledTableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center">
+                                <TableCell colSpan={5} align="center">
                                     <CircularProgress />
                                 </TableCell>
                             </TableRow>
-                        ) : users.length === 0 ? (
+                        ) : veterinaries.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center">
+                                <TableCell colSpan={5} align="center">
                                     <Typography variant="body2" color="text.secondary">
-                                        No hay usuarios disponibles
+                                        No hay veterinarias disponibles
                                     </Typography>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            users.map((user) => (
-                                <StyledTableRow key={user.id}>
-                                    <StyledTableCell>{user.id}</StyledTableCell>
-                                    <StyledTableCell>{user.name}</StyledTableCell>
-                                    <StyledTableCell>{user.last_name || '-'}</StyledTableCell>
-                                    <StyledTableCell>{user.phone || '-'}</StyledTableCell>
-                                    <StyledTableCell>{user.email}</StyledTableCell>
+                            veterinaries.map((veterinary) => (
+                                <StyledTableRow key={veterinary.id}>
+                                    <StyledTableCell>{veterinary.id}</StyledTableCell>
+                                    <StyledTableCell>{veterinary.name}</StyledTableCell>
                                     <StyledTableCell>
-                                        {ROLE_OPTIONS.find(r => r.value === user.roles[0])?.label || user.roles[0]}
+                                        {veterinary.plan?.name || `Plan ID: ${veterinary.plan_id}`}
                                     </StyledTableCell>
                                     <StyledTableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
-                                                onClick={() => handleEdit(user)}
+                                                onClick={() => handleEdit(veterinary)}
                                             >
                                                 <EditIcon />
                                             </IconButton>
@@ -335,7 +386,7 @@ function UsersPage() {
                                         <Tooltip title="Eliminar" placement="top">
                                             <IconButton
                                                 size="small"
-                                                onClick={() => handleDelete(user.id)}
+                                                onClick={() => handleDelete(veterinary.id)}
                                                 color="error"
                                             >
                                                 <DeleteIcon />
@@ -363,7 +414,7 @@ function UsersPage() {
             {/* Modal para crear/editar */}
             <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
                 <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }}>
-                    {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
+                    {editingVeterinary ? 'Editar Veterinaria' : 'Nueva Veterinaria'}
                 </DialogTitle>
                 <DialogContent dividers>
                     {formErrors.general && (
@@ -383,66 +434,39 @@ function UsersPage() {
                         helperText={formErrors.name}
                         sx={{ mb: 2 }}
                     />
-                    <TextField
-                        label="Apellido"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.last_name}
-                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        error={!!formErrors.last_name}
-                        helperText={formErrors.last_name}
-                        sx={{ mb: 2 }}
-                    />
-                    <TextField
-                        label="Teléfono"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        error={!!formErrors.phone}
-                        helperText={formErrors.phone}
-                        sx={{ mb: 2 }}
-                    />
-                    <TextField
-                        label="Email"
-                        type="email"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        error={!!formErrors.email}
-                        helperText={formErrors.email}
-                        sx={{ mb: 2 }}
-                    />
-                    <TextField
-                        label={editingUser ? "Nueva Contraseña (dejar vacío para mantener la actual)" : "Contraseña"}
-                        type="password"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        error={!!formErrors.password}
-                        helperText={formErrors.password}
-                        sx={{ mb: 2 }}
-                    />
-                    <FormControl fullWidth size="small" error={!!formErrors.role} sx={{ mb: 2 }}>
-                        <InputLabel>Rol</InputLabel>
+                    <FormControl fullWidth size="small" error={!!formErrors.plan_id} sx={{ mb: 2 }}>
+                        <InputLabel>Plan</InputLabel>
                         <Select
-                            value={formData.role}
-                            label="Rol"
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                            value={formData.plan_id}
+                            label="Plan"
+                            onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
+                            disabled={loadingPlans}
                         >
-                            {ROLE_OPTIONS.map((role) => (
-                                <MenuItem key={role.value} value={role.value}>
-                                    {role.label}
+                            {plans.map((plan) => (
+                                <MenuItem key={plan.id} value={plan.id.toString()}>
+                                    {plan.name}
                                 </MenuItem>
                             ))}
                         </Select>
-                        {formErrors.role && <FormHelperText>{formErrors.role}</FormHelperText>}
+                        {formErrors.plan_id && <FormHelperText>{formErrors.plan_id}</FormHelperText>}
+                        {loadingPlans && <FormHelperText>Cargando planes...</FormHelperText>}
+                    </FormControl>
+                    <FormControl fullWidth size="small" error={!!formErrors.user_id} sx={{ mb: 2 }}>
+                        <InputLabel>Usuario</InputLabel>
+                        <Select
+                            value={formData.user_id}
+                            label="Usuario"
+                            onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                            disabled={loadingUsers}
+                        >
+                            {users.map((user) => (
+                                <MenuItem key={user.id} value={user.id.toString()}>
+                                    {user.name} ({user.email})
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {formErrors.user_id && <FormHelperText>{formErrors.user_id}</FormHelperText>}
+                        {loadingUsers && <FormHelperText>Cargando usuarios...</FormHelperText>}
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
@@ -462,7 +486,10 @@ function UsersPage() {
 export default function IntegrationNotistack() {
     return (
         <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-            <UsersPage />
+            <VeterinariesPage />
         </SnackbarProvider>
     );
 }
+
+
+
