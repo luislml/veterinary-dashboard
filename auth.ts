@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import type { Provider } from 'next-auth/providers';
-import { loginWithAPI } from './lib/api-client';
+import { loginWithAPI, getAuthenticatedUser } from './lib/api-client';
 
 
 const providers: Provider[] = [Credentials({
@@ -26,14 +26,14 @@ const providers: Provider[] = [Credentials({
             // Laravel puede devolver el usuario directamente o dentro de 'user'
             const user = response.user || response;
             
-            if (!token || !user || !user.id) {
+            if (!token || !user || !(user as any).id) {
                 throw new Error('Respuesta inválida del servidor');
             }
 
             return {
-                id: String(user.id),
-                name: user.name || user.email || 'Usuario',
-                email: user.email || String(credentials.email),
+                id: String((user as any).id),
+                name: (user as any).name || (user as any).email || 'Usuario',
+                email: (user as any).email || String(credentials.email),
                 // Guardar el token para usarlo en las peticiones API
                 accessToken: token,
             };
@@ -80,14 +80,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signIn: '/auth/signin',
     },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger }) {
             // Guardar el token de Laravel cuando el usuario inicia sesión
             if (user) {
                 // El token se pasa desde el authorize en el objeto user
                 if ((user as any).accessToken) {
                     token.accessToken = (user as any).accessToken;
+                    
+                    // Obtener información completa del usuario con roles y permisos
+                    try {
+                        const userData = await getAuthenticatedUser((user as any).accessToken);
+                        token.user = userData.user;
+                        token.roles = userData.roles;
+                        token.permissions = userData.permissions;
+                        token.veterinaries = userData.veterinaries;
+                    } catch (error) {
+                        console.error('Error al obtener datos del usuario:', error);
+                        // Si falla, al menos guardamos el token para intentar más tarde
+                    }
                 }
             }
+            
+            // Refrescar datos del usuario si es necesario
+            if (trigger === 'update' && token.accessToken) {
+                try {
+                    const userData = await getAuthenticatedUser(token.accessToken as string);
+                    token.user = userData.user;
+                    token.roles = userData.roles;
+                    token.permissions = userData.permissions;
+                    token.veterinaries = userData.veterinaries;
+                } catch (error) {
+                    console.error('Error al actualizar datos del usuario:', error);
+                }
+            }
+            
             return token;
         },
         async session({ session, token }) {
@@ -95,6 +121,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (token.accessToken) {
                 (session as any).accessToken = token.accessToken;
             }
+            
+            // Agregar datos del usuario, roles, permisos y veterinarias
+            if (token.user) {
+                (session as any).user = {
+                    ...session.user,
+                    ...token.user,
+                };
+            }
+            
+            if (token.roles) {
+                (session as any).roles = token.roles;
+            }
+            
+            if (token.permissions) {
+                (session as any).permissions = token.permissions;
+            }
+            
+            if (token.veterinaries) {
+                (session as any).veterinaries = token.veterinaries;
+            }
+            
             return session;
         },
         authorized({ auth: session, request: { nextUrl } }) {

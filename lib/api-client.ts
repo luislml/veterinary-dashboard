@@ -20,6 +20,25 @@ export interface ApiError {
     errors?: Record<string, string[]>;
 }
 
+export interface Veterinary {
+    id: number;
+    name: string;
+    slug: string;
+}
+
+export interface UserResponse {
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        last_name: string;
+        phone: string;
+    };
+    roles: string[];
+    permissions: string[];
+    veterinaries: Veterinary[];
+}
+
 /**
  * Realiza una petición de login a la API de Laravel
  */
@@ -59,11 +78,11 @@ export async function loginWithAPI(email: string, password: string): Promise<Log
 }
 
 /**
- * Obtiene el usuario autenticado desde la API
+ * Obtiene el usuario autenticado desde la API con roles, permisos y veterinarias
  */
-export async function getAuthenticatedUser(token: string): Promise<LoginResponse['user']> {
+export async function getAuthenticatedUser(token: string): Promise<UserResponse> {
     try {
-        const response = await fetch(API_CONFIG.baseURL + '/user', {
+        const response = await fetch(API_CONFIG.baseURL + '/users/me', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

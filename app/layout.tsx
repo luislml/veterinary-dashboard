@@ -14,66 +14,121 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
 import { auth } from '../auth';
+import { getSessionWithPermissions } from '../lib/permissions';
 import theme from '../theme';
 import ConfirmProviderWrapper from './components/ConfirmProviderWrapper';
+
 
 export const metadata = {
     title: 'Dashboard Veterinaria',
     description: 'Dashboard Veterinaria',
 };
 
-const NAVIGATION: Navigation = [
-    {
-        kind: 'header',
-        title: 'Menu Principal',
-    },
-    {
-        segment: '',
-        title: 'Dashboard',
-        icon: <DashboardIcon />,
-    },
-    {
-        segment: 'plans',
-        title: 'Planes',
-        icon: <StyleIcon />,
-    },
-    {
-        segment: 'users',
-        title: 'Usuarios',
-        icon: <PersonIcon />,
-    },
-    {
-        segment: 'veterinaries',
-        title: 'Veterinarias',
-        icon: <PetsIcon />,
-    },
-    {
-        segment: 'clients',
-        title: 'Clientes',
-        icon: <PeopleIcon />,
-    },
-    {
-        title: 'Mascotas',
-        icon: <EmojiNatureIcon />,
-        children: [
-            {
-                segment: 'type-pets',
-                title: 'Tipos de mascotas',
-                icon: <CategoryIcon />,
-            },
-            {
-                segment: 'races',
-                title: 'Razas',
-                icon: <StarIcon />,
-            },
-            {
-                segment: 'pets',
-                title: 'Registro de mascotas',
-                icon: <AssignmentIcon />,
-            },
-        ],
-    },
-];
+/**
+ * Genera el menú de navegación basado en los permisos del usuario
+ */
+function getNavigation(
+    hasPermission: (permission: string) => boolean,
+    hasRole: (role: string) => boolean
+): Navigation {
+    const navigation: Navigation = [
+        {
+            kind: 'header',
+            title: 'Menu Principal',
+        },
+        {
+            segment: '',
+            title: 'Dashboard',
+            icon: <DashboardIcon />,
+        },
+    ];
+
+    // Planes - requiere permiso 'view any plans'
+    if (hasPermission('view any plans')) {
+        navigation.push({
+            segment: 'plans',
+            title: 'Planes',
+            icon: <StyleIcon />,
+        });
+    }
+
+    // Usuarios - requiere permiso 'view any users'
+    if (hasPermission('view any users')) {
+        navigation.push({
+            segment: 'users',
+            title: 'Usuarios',
+            icon: <PersonIcon />,
+        });
+    }
+
+    // Veterinarias - requiere permiso 'view any veterinaries'
+    if (hasPermission('view any veterinaries')) {
+        navigation.push({
+            segment: 'veterinaries',
+            title: 'Veterinarias',
+            icon: <PetsIcon />,
+        });
+    }
+
+    // Clientes - requiere permiso 'view any clients'
+    if (hasPermission('view any clients')) {
+        navigation.push({
+            segment: 'clients',
+            title: 'Clientes',
+            icon: <PeopleIcon />,
+        });
+    }
+
+    // Mascotas - menú con subitems
+    const petsChildren = [];
+    
+    // Tipos de mascotas - requiere permiso 'view any type-pets'
+    if (hasPermission('view any type-pets')) {
+        petsChildren.push({
+            segment: 'type-pets',
+            title: 'Tipos de mascotas',
+            icon: <CategoryIcon />,
+        });
+    }
+
+    // Razas - requiere permiso 'view any races'
+    if (hasPermission('view any races')) {
+        petsChildren.push({
+            segment: 'races',
+            title: 'Razas',
+            icon: <StarIcon />,
+        });
+    }
+
+    // Registro de mascotas - requiere permiso 'view any pets'
+    if (hasPermission('view any pets')) {
+        petsChildren.push({
+            segment: 'pets',
+            title: 'Registro de mascotas',
+            icon: <AssignmentIcon />,
+        });
+    }
+
+    // Solo agregar el menú de Mascotas si tiene al menos un subitem Y es admin
+    if (petsChildren.length > 0 && hasRole('admin')) {
+        navigation.push({
+            title: 'Mascotas',
+            icon: <EmojiNatureIcon />,
+            children: petsChildren,
+        });
+    }
+
+    // al veterinario solo se le muestra el menú de Mascotas
+    if (hasPermission('view any pets') && hasRole('veterinary')) {
+        navigation.push({
+            segment: 'pets',
+            title: 'Mascotas',
+            icon: <EmojiNatureIcon />,
+        });
+    }
+    
+    return navigation;
+}
 
 const BRANDING = {
   title: 'Veterinaria APP',
@@ -91,6 +146,32 @@ const LOCALE_TEXT = {
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
     const session = await auth();
+    
+    // Obtener sesión con roles y permisos
+    const sessionWithPermissions = await getSessionWithPermissions();
+    
+    // // Console.log a modo de prueba
+    // if (sessionWithPermissions) {
+    //     console.log('=== INFORMACIÓN DEL USUARIO ===');
+    //     console.log('Usuario:', sessionWithPermissions.user);
+    //     console.log('Roles:', sessionWithPermissions.roles);
+    //     console.log('Permisos:', sessionWithPermissions.permissions);
+    //     console.log('Veterinarias:', sessionWithPermissions.veterinaries);
+    //     console.log('--- Verificaciones de ejemplo ---');
+    //     console.log('¿Tiene rol "veterinary"?', sessionWithPermissions.hasRole?.('veterinary'));
+    //     console.log('¿Tiene permiso "view pets"?', sessionWithPermissions.hasPermission?.('view pets'));
+    //     console.log('¿Tiene permiso "view dashboard"?', sessionWithPermissions.hasPermission?.('view dashboard'));
+    //     console.log('¿Tiene permiso "view any plans"?', sessionWithPermissions.hasPermission?.('view any plans'));
+    //     console.log('¿Tiene alguno de estos roles ["veterinary", "admin"]?', sessionWithPermissions.hasRoles?.(['veterinary', 'admin']));
+    //     console.log('¿Tiene todos estos permisos ["view pets", "create pets"]?', sessionWithPermissions.hasPermissions?.(['view pets', 'create pets']));
+    //     console.log('================================');
+    // }
+
+    // Generar menú basado en permisos y roles
+    const navigation = getNavigation(
+        (permission: string) => sessionWithPermissions?.hasPermission?.(permission) || false,
+        (role: string) => sessionWithPermissions?.hasRole?.(role) || false
+    );
 
     return (
         <html lang="en" data-toolpad-color-scheme="light" suppressHydrationWarning>
@@ -100,9 +181,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
                     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
                     
                         <NextAppProvider
-                            navigation={NAVIGATION}
+                            navigation={navigation}
                             branding={BRANDING}
-                            session={session}
+                            session={session as any}
                             authentication={AUTHENTICATION}
                             theme={theme}
                             localeText={LOCALE_TEXT}
