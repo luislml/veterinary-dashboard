@@ -209,7 +209,14 @@ function PetsPage() {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch(`/api/pets?page=${page}&per_page=10`);
+            
+            // Construir URL con filtro de veterinary_id si el rol es veterinary
+            let url = `/api/pets?page=${page}&per_page=10`;
+            if (isVeterinary && selectedVeterinary?.id) {
+                url += `&veterinary_id=${selectedVeterinary.id}`;
+            }
+            
+            const response = await fetch(url);
             
             let data;
             try {
@@ -242,13 +249,20 @@ function PetsPage() {
         } finally {
             setLoading(false);
         }
-    }, [page]);
+    }, [page, isVeterinary, selectedVeterinary?.id]);
 
     React.useEffect(() => {
         loadPets();
         loadRaces();
         loadClients();
     }, [loadPets, loadRaces, loadClients]);
+
+    // Resetear página cuando cambie la veterinaria seleccionada
+    React.useEffect(() => {
+        if (isVeterinary && selectedVeterinary?.id) {
+            setPage(1);
+        }
+    }, [isVeterinary, selectedVeterinary?.id]);
 
     // Abrir modal para crear
     const handleCreate = () => {

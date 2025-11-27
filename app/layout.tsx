@@ -10,6 +10,9 @@ import CategoryIcon from '@mui/icons-material/Category';
 import EmojiNatureIcon from '@mui/icons-material/EmojiNature';
 import StarIcon from '@mui/icons-material/Star';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -125,6 +128,41 @@ function getNavigation(
             segment: 'pets',
             title: 'Mascotas',
             icon: <EmojiNatureIcon />,
+        });
+    }
+
+    // configuraciones - menú con subitems
+    const configurationsChildren = [];
+
+    // configuraciones - menú con subitems
+    if (hasPermission('view any configurations')) {
+        configurationsChildren.push({
+            segment: 'configurations',
+            title: 'Mi veterinaria',
+            icon: <PetsIcon />,
+        });
+    }
+    if (hasPermission('view any schedules')) {
+        configurationsChildren.push({
+            segment: 'schedules',
+            title: 'Horarios',
+            icon: <ScheduleIcon />,
+        });
+    }
+    // if (hasPermission('view any addresses')) {
+    //     configurationsChildren.push({
+    //         segment: 'addresses',
+    //         title: 'Direcciones',
+    //         icon: <LocationOnIcon />,
+    //     });
+    // }
+
+    // Solo agregar el menú de Configuraciones si tiene al menos un subitem Y es veterinario
+    if (configurationsChildren.length > 0 && hasRole('veterinary')) {
+        navigation.push({
+            title: 'Configuraciones generales',
+            icon: <SettingsIcon />,
+            children: configurationsChildren,
         });
     }
     
