@@ -17,6 +17,7 @@ import { auth } from '../auth';
 import { getSessionWithPermissions } from '../lib/permissions';
 import theme from '../theme';
 import ConfirmProviderWrapper from './components/ConfirmProviderWrapper';
+import { SelectedVeterinaryProvider } from '../lib/contexts/SelectedVeterinaryContext';
 
 
 export const metadata = {
@@ -178,20 +179,22 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <body>
                 <ConfirmProviderWrapper>
                 <SessionProvider session={session}>
-                    <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-                    
-                        <NextAppProvider
-                            navigation={navigation}
-                            branding={BRANDING}
-                            session={session as any}
-                            authentication={AUTHENTICATION}
-                            theme={theme}
-                            localeText={LOCALE_TEXT}
-                        >
-                            {props.children}
-                        </NextAppProvider>
-                      
-                    </AppRouterCacheProvider>
+                    <SelectedVeterinaryProvider>
+                        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
+                        
+                            <NextAppProvider
+                                navigation={navigation}
+                                branding={BRANDING}
+                                session={session as any}
+                                authentication={AUTHENTICATION}
+                                theme={theme}
+                                localeText={LOCALE_TEXT}
+                            >
+                                {props.children}
+                            </NextAppProvider>
+                          
+                        </AppRouterCacheProvider>
+                    </SelectedVeterinaryProvider>
                 </SessionProvider>
                 </ConfirmProviderWrapper>
             </body>

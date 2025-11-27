@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
         const sortBy = searchParams.get('sort_by');
         const sortOrder = searchParams.get('sort_order') || 'asc';
         const filter = searchParams.get('filter');
+        const paginate = searchParams.get('paginate') || 'true';
 
         // Construir URL de Laravel
         const laravelUrl = new URL(`${API_CONFIG.baseURL}/plans`);
@@ -34,6 +35,10 @@ export async function GET(req: NextRequest) {
         
         if (filter) {
             laravelUrl.searchParams.append('filter', filter);
+        }
+
+        if (paginate) {
+            laravelUrl.searchParams.append('paginate', paginate);
         }
 
         // Obtener headers con token de autenticación

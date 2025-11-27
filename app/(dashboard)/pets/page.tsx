@@ -35,6 +35,8 @@ import { PageContainer } from '@toolpad/core/PageContainer';
 import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
+import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
+import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -96,6 +98,12 @@ const GENDER_OPTIONS = [
 function PetsPage() {
 
     const { enqueueSnackbar } = useSnackbar();
+    const { selectedVeterinary } = useSelectedVeterinary();
+    const { data: session } = useSessionWithPermissions();
+    
+    // Verificar si el usuario es veterinary
+    const isVeterinary = session?.hasRole?.('veterinary') || false;
+    
     const handleClickVariant = (variant: VariantType) => () => {
         // variant could be success, error, warning, info, or default
         enqueueSnackbar('This is a success message!', { variant });
@@ -161,7 +169,14 @@ function PetsPage() {
     const loadClients = React.useCallback(async () => {
         try {
             setLoadingClients(true);
-            const response = await fetch(`/api/clients?page=1&per_page=100`);
+            
+            // Construir URL con filtro de veterinary_id si el rol es veterinary
+            let url = `/api/clients?paginate=false`;
+            if (isVeterinary && selectedVeterinary?.id) {
+                url += `&veterinary_id=${selectedVeterinary.id}`;
+            }
+            
+            const response = await fetch(url);
             
             let data;
             try {
@@ -187,7 +202,7 @@ function PetsPage() {
         } finally {
             setLoadingClients(false);
         }
-    }, []);
+    }, [isVeterinary, selectedVeterinary?.id]);
 
     // Cargar mascotas
     const loadPets = React.useCallback(async () => {

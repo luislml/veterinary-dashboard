@@ -37,6 +37,8 @@ import { PageContainer } from '@toolpad/core/PageContainer';
 import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
+import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
+import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -84,6 +86,11 @@ interface Veterinary {
 function ClientsPage() {
 
     const { enqueueSnackbar } = useSnackbar();
+    const { selectedVeterinary } = useSelectedVeterinary();
+    const { data: session } = useSessionWithPermissions();
+    
+    // Verificar si el usuario es admin
+    const isAdmin = session?.hasRole?.('admin') || false;
     const handleClickVariant = (variant: VariantType) => () => {
         // variant could be success, error, warning, info, or default
         enqueueSnackbar('This is a success message!', { variant });
@@ -110,8 +117,14 @@ function ClientsPage() {
     const [total, setTotal] = React.useState(0);
     const confirm = useConfirm();
 
-    // Cargar veterinarias
+    // Cargar veterinarias (solo para admin)
     const loadVeterinaries = React.useCallback(async () => {
+        // Solo cargar si el usuario es admin
+        if (!isAdmin) {
+            setVeterinaries([]);
+            return;
+        }
+
         try {
             setLoadingVeterinaries(true);
             const response = await fetch(`/api/veterinaries?page=1&per_page=100`);
@@ -140,14 +153,21 @@ function ClientsPage() {
         } finally {
             setLoadingVeterinaries(false);
         }
-    }, []);
+    }, [isAdmin]);
 
     // Cargar clientes
     const loadClients = React.useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch(`/api/clients?page=${page}&per_page=10`);
+            
+            // Construir URL con filtro de veterinary_id si está disponible
+            let url = `/api/clients?page=${page}&per_page=10`;
+            if (selectedVeterinary?.id) {
+                url += `&veterinary_id=${selectedVeterinary.id}`;
+            }
+            
+            const response = await fetch(url);
             
             let data;
             try {
@@ -180,17 +200,31 @@ function ClientsPage() {
         } finally {
             setLoading(false);
         }
-    }, [page]);
+    }, [page, selectedVeterinary?.id]);
 
     React.useEffect(() => {
         loadClients();
-        loadVeterinaries();
-    }, [loadClients, loadVeterinaries]);
+        // Solo cargar veterinarias si es admin
+        if (isAdmin) {
+            loadVeterinaries();
+        }
+    }, [loadClients, loadVeterinaries, isAdmin]);
+
+    // Resetear página cuando cambie la veterinaria seleccionada
+    React.useEffect(() => {
+        if (selectedVeterinary?.id) {
+            setPage(1);
+        }
+    }, [selectedVeterinary?.id]);
 
     // Abrir modal para crear
     const handleCreate = () => {
         setEditingClient(null);
-        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: [] });
+        // Si es veterinary, usar la veterinaria activa por defecto
+        const defaultVeterinaryId = !isAdmin && selectedVeterinary?.id 
+            ? [selectedVeterinary.id] 
+            : [];
+        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: defaultVeterinaryId });
         setFormErrors({});
         setOpenModal(true);
     };
@@ -209,6 +243,11 @@ function ClientsPage() {
             veterinaryIds = [client.veterinary_id];
         }
         
+        // Si es veterinary y no hay veterinarias asignadas, usar la veterinaria activa
+        if (!isAdmin && veterinaryIds.length === 0 && selectedVeterinary?.id) {
+            veterinaryIds = [selectedVeterinary.id];
+        }
+        
         setFormData({ 
             name: client.name, 
             last_name: client.last_name || '', 
@@ -224,7 +263,11 @@ function ClientsPage() {
     const handleCloseModal = () => {
         setOpenModal(false);
         setEditingClient(null);
-        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: [] });
+        // Si es veterinary, usar la veterinaria activa por defecto
+        const defaultVeterinaryId = !isAdmin && selectedVeterinary?.id 
+            ? [selectedVeterinary.id] 
+            : [];
+        setFormData({ name: '', last_name: '', phone: '', address: '', veterinary_id: defaultVeterinaryId });
         setFormErrors({});
     };
 
@@ -237,12 +280,18 @@ function ClientsPage() {
             const url = editingClient ? `/api/clients/${editingClient.id}` : '/api/clients';
             const method = editingClient ? 'PUT' : 'POST';
 
+            // Si es veterinary y no hay veterinary_id, usar la veterinaria activa
+            let veterinaryId = formData.veterinary_id;
+            if (!isAdmin && (!veterinaryId || veterinaryId.length === 0) && selectedVeterinary?.id) {
+                veterinaryId = [selectedVeterinary.id];
+            }
+
             const dataToSend = {
                 name: formData.name,
                 last_name: formData.last_name,
                 phone: formData.phone,
                 address: formData.address,
-                veterinary_id: formData.veterinary_id,
+                veterinary_id: veterinaryId,
             };
 
             const response = await fetch(url, {
@@ -467,42 +516,44 @@ function ClientsPage() {
                         helperText={formErrors.address}
                         sx={{ mb: 2 }}
                     />
-                    <FormControl fullWidth size="small" error={!!formErrors.veterinary_id} sx={{ mb: 2 }}>
-                        <InputLabel>Veterinarias</InputLabel>
-                        <Select
-                            multiple
-                            value={formData.veterinary_id}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setFormData({ 
-                                    ...formData, 
-                                    veterinary_id: typeof value === 'string' 
-                                        ? value.split(',').map(v => parseInt(v.trim()))
-                                        : value as number[]
-                                });
-                            }}
-                            input={<OutlinedInput label="Veterinarias" />}
-                            renderValue={(selected) => (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                    {(selected as number[]).map((value) => {
-                                        const veterinary = veterinaries.find(v => v.id === value);
-                                        return veterinary ? (
-                                            <Chip key={value} label={veterinary.name} size="small" />
-                                        ) : null;
-                                    })}
-                                </Box>
-                            )}
-                            disabled={loadingVeterinaries}
-                        >
-                            {veterinaries.map((veterinary) => (
-                                <MenuItem key={veterinary.id} value={veterinary.id}>
-                                    {veterinary.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        {formErrors.veterinary_id && <FormHelperText>{formErrors.veterinary_id}</FormHelperText>}
-                        {loadingVeterinaries && <FormHelperText>Cargando veterinarias...</FormHelperText>}
-                    </FormControl>
+                    {isAdmin && (
+                        <FormControl fullWidth size="small" error={!!formErrors.veterinary_id} sx={{ mb: 2 }}>
+                            <InputLabel>Veterinarias</InputLabel>
+                            <Select
+                                multiple
+                                value={formData.veterinary_id}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setFormData({ 
+                                        ...formData, 
+                                        veterinary_id: typeof value === 'string' 
+                                            ? value.split(',').map(v => parseInt(v.trim()))
+                                            : value as number[]
+                                    });
+                                }}
+                                input={<OutlinedInput label="Veterinarias" />}
+                                renderValue={(selected) => (
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                        {(selected as number[]).map((value) => {
+                                            const veterinary = veterinaries.find(v => v.id === value);
+                                            return veterinary ? (
+                                                <Chip key={value} label={veterinary.name} size="small" />
+                                            ) : null;
+                                        })}
+                                    </Box>
+                                )}
+                                disabled={loadingVeterinaries}
+                            >
+                                {veterinaries.map((veterinary) => (
+                                    <MenuItem key={veterinary.id} value={veterinary.id}>
+                                        {veterinary.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                            {formErrors.veterinary_id && <FormHelperText>{formErrors.veterinary_id}</FormHelperText>}
+                            {loadingVeterinaries && <FormHelperText>Cargando veterinarias...</FormHelperText>}
+                        </FormControl>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseModal} disabled={submitting} color="error">

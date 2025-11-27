@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
         const sortBy = searchParams.get('sort_by');
         const sortOrder = searchParams.get('sort_order') || 'asc';
         const filter = searchParams.get('filter');
+        const veterinaryId = searchParams.get('veterinary_id');
+        const paginate = searchParams.get('paginate') || 'true';
 
         // Construir URL de Laravel
         const laravelUrl = new URL(`${API_CONFIG.baseURL}/clients`);
@@ -34,6 +36,14 @@ export async function GET(req: NextRequest) {
         
         if (filter) {
             laravelUrl.searchParams.append('filter', filter);
+        }
+        
+        if (veterinaryId) {
+            laravelUrl.searchParams.append('veterinary_id', veterinaryId);
+        }
+
+        if (paginate) {
+            laravelUrl.searchParams.append('paginate', paginate);
         }
 
         // Obtener headers con token de autenticación

@@ -108,7 +108,7 @@ function VeterinariesPage() {
     const loadPlans = React.useCallback(async () => {
         try {
             setLoadingPlans(true);
-            const response = await fetch(`/api/plans?page=1&per_page=100`);
+            const response = await fetch(`/api/plans?paginate=false`);
             
             let data;
             try {
@@ -140,8 +140,7 @@ function VeterinariesPage() {
     const loadUsers = React.useCallback(async () => {
         try {
             setLoadingUsers(true);
-            const response = await fetch(`/api/users?page=1&per_page=100`);
-            
+            const response = await fetch(`/api/users?role=veterinary&paginate=false`);
             let data;
             try {
                 data = await response.json();
