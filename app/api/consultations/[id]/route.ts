@@ -4,7 +4,7 @@ import { API_CONFIG } from '../../../../lib/config';
 import { getAuthHeaders } from '../../../../lib/auth-utils';
 
 /**
- * GET /api/pets/[id] - Obtener una mascota específica
+ * GET /api/consultations/[id] - Obtener una consulta específica
  * Proxy a la API de Laravel
  */
 export async function GET(
@@ -23,7 +23,7 @@ export async function GET(
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/pets/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/consultations/${id}`, {
             method: 'GET',
             headers,
         });
@@ -32,14 +32,14 @@ export async function GET(
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Mascota no encontrada' },
+                { error: data.message || 'Consulta no encontrada' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en GET /api/pets/[id]:', error);
+        console.error('Error en GET /api/consultations/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }
@@ -48,7 +48,7 @@ export async function GET(
 }
 
 /**
- * PUT /api/pets/[id] - Actualizar una mascota
+ * PUT /api/consultations/[id] - Actualizar una consulta
  * Proxy a la API de Laravel
  */
 export async function PUT(
@@ -63,42 +63,29 @@ export async function PUT(
         }
 
         const { id } = await params;
+        const body = await req.json();
+
+        // Obtener headers con token de autenticación
+        const headers = await getAuthHeaders();
         
-        // Verificar si es FormData o JSON
-        const contentType = req.headers.get('content-type') || '';
-        let body: any;
-        let headers: Record<string, string>;
-
-        if (contentType.includes('multipart/form-data')) {
-            // Es FormData
-            const formData = await req.formData();
-            body = formData;
-            // No incluir Content-Type para FormData, el navegador lo establece automáticamente
-            headers = await getAuthHeaders(false);
-        } else {
-            // Es JSON
-            body = await req.json();
-            headers = await getAuthHeaders();
-        }
-
-        const response = await fetch(`${API_CONFIG.baseURL}/pets/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/consultations/${id}`, {
             method: 'PUT',
             headers,
-            body: body instanceof FormData ? body : JSON.stringify(body),
+            body: JSON.stringify(body),
         });
 
         const data = await response.json();
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al actualizar mascota', errors: data.errors },
+                { error: data.message || 'Error al actualizar consulta', errors: data.errors },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en PUT /api/pets/[id]:', error);
+        console.error('Error en PUT /api/consultations/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }
@@ -107,7 +94,7 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/pets/[id] - Eliminar una mascota
+ * DELETE /api/consultations/[id] - Eliminar una consulta
  * Proxy a la API de Laravel
  */
 export async function DELETE(
@@ -126,7 +113,7 @@ export async function DELETE(
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/pets/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/consultations/${id}`, {
             method: 'DELETE',
             headers,
         });
@@ -134,14 +121,14 @@ export async function DELETE(
         if (!response.ok) {
             const data = await response.json();
             return NextResponse.json(
-                { error: data.message || 'Error al eliminar mascota' },
+                { error: data.message || 'Error al eliminar consulta' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error en DELETE /api/pets/[id]:', error);
+        console.error('Error en DELETE /api/consultations/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

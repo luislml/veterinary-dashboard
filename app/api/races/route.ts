@@ -21,12 +21,15 @@ export async function GET(req: NextRequest) {
         const sortBy = searchParams.get('sort_by');
         const sortOrder = searchParams.get('sort_order') || 'asc';
         const filter = searchParams.get('filter');
+        const typePetId = searchParams.get('type_pet_id');
 
         // Construir URL de Laravel
         const laravelUrl = new URL(`${API_CONFIG.baseURL}/races`);
         laravelUrl.searchParams.append('page', page);
         laravelUrl.searchParams.append('per_page', perPage);
-        
+        if (typePetId) {
+            laravelUrl.searchParams.append('type_pet_id', typePetId);
+        }
         if (sortBy) {
             laravelUrl.searchParams.append('sort_by', sortBy);
             laravelUrl.searchParams.append('sort_order', sortOrder);

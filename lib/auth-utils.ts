@@ -21,15 +21,19 @@ export async function getAccessToken(): Promise<string | null> {
 
 /**
  * Obtiene los headers de autorización para peticiones a la API de Laravel
+ * @param includeContentType Si es true, incluye Content-Type (por defecto true)
  * @returns Headers con el token de autorización
  */
-export async function getAuthHeaders(): Promise<Record<string, string>> {
+export async function getAuthHeaders(includeContentType: boolean = true): Promise<Record<string, string>> {
     const token = await getAccessToken();
     
     const headers: Record<string, string> = {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
     };
+
+    if (includeContentType) {
+        headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;

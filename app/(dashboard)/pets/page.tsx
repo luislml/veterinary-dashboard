@@ -27,16 +27,20 @@ import {
     InputLabel,
     FormHelperText,
     Tooltip,
+    Avatar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import PetsIcon from '@mui/icons-material/Pets';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
+import { API_CONFIG } from '../../../lib/config';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -64,10 +68,12 @@ interface Pet {
     client_id: number;
     color: string;
     gender: string;
-    age: number;
+    age: string | number;
+    photo?: string;
     race?: {
         id: number;
         name: string;
+        type_pet_id?: number;
     };
     client?: {
         id: number;
@@ -79,6 +85,12 @@ interface Pet {
 }
 
 interface Race {
+    id: number;
+    name: string;
+    type_pet_id?: number;
+}
+
+interface TypePet {
     id: number;
     name: string;
 }
@@ -111,21 +123,27 @@ function PetsPage() {
 
     const [pets, setPets] = React.useState<Pet[]>([]);
     const [races, setRaces] = React.useState<Race[]>([]);
+    const [typePets, setTypePets] = React.useState<TypePet[]>([]);
     const [clients, setClients] = React.useState<Client[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [loadingRaces, setLoadingRaces] = React.useState(false);
+    const [loadingTypePets, setLoadingTypePets] = React.useState(false);
     const [loadingClients, setLoadingClients] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [openModal, setOpenModal] = React.useState(false);
     const [editingPet, setEditingPet] = React.useState<Pet | null>(null);
     const [formData, setFormData] = React.useState({ 
         name: '', 
+        type_pet_id: '',
         race_id: '', 
         client_id: '', 
         color: '', 
         gender: '', 
         age: '' 
     });
+    const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
+    const [photoUrl, setPhotoUrl] = React.useState<string | null>(null);
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
     const [page, setPage] = React.useState(1);
@@ -133,11 +151,77 @@ function PetsPage() {
     const [total, setTotal] = React.useState(0);
     const confirm = useConfirm();
 
-    // Cargar razas
-    const loadRaces = React.useCallback(async () => {
+    // Cargar tipos de mascotas
+    const loadTypePets = React.useCallback(async () => {
+        try {
+            setLoadingTypePets(true);
+            const response = await fetch(`/api/type-pets?paginate=false`);
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Error al cargar tipos de mascotas');
+            }
+
+            if (data.data) {
+                setTypePets(data.data);
+            } else if (Array.isArray(data)) {
+                setTypePets(data);
+            } else {
+                setTypePets([]);
+            }
+        } catch (err) {
+            console.error('Error al cargar tipos de mascotas:', err);
+            setTypePets([]);
+        } finally {
+            setLoadingTypePets(false);
+        }
+    }, []);
+
+    // Cargar todas las razas (para edición, sin modificar el estado)
+    const loadAllRaces = React.useCallback(async () => {
+        try {
+            const response = await fetch(`/api/races?paginate=false`);
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                throw new Error('Respuesta inválida del servidor');
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Error al cargar razas');
+            }
+
+            if (data.data) {
+                return data.data;
+            } else if (Array.isArray(data)) {
+                return data;
+            } else {
+                return [];
+            }
+        } catch (err) {
+            console.error('Error al cargar razas:', err);
+            return [];
+        }
+    }, []);
+
+    // Cargar razas según el tipo de mascota seleccionado
+    const loadRaces = React.useCallback(async (typePetId?: string) => {
+        if (!typePetId) {
+            setRaces([]);
+            return;
+        }
+
         try {
             setLoadingRaces(true);
-            const response = await fetch(`/api/races?page=1&per_page=100`);
+            const response = await fetch(`/api/races?paginate=false&type_pet_id=${typePetId}`);
             
             let data;
             try {
@@ -253,9 +337,9 @@ function PetsPage() {
 
     React.useEffect(() => {
         loadPets();
-        loadRaces();
+        loadTypePets();
         loadClients();
-    }, [loadPets, loadRaces, loadClients]);
+    }, [loadPets, loadTypePets, loadClients]);
 
     // Resetear página cuando cambie la veterinaria seleccionada
     React.useEffect(() => {
@@ -267,32 +351,154 @@ function PetsPage() {
     // Abrir modal para crear
     const handleCreate = () => {
         setEditingPet(null);
-        setFormData({ name: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
+        setFormData({ name: '', type_pet_id: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
         setFormErrors({});
+        setRaces([]);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        setPhotoUrl(null);
         setOpenModal(true);
     };
 
     // Abrir modal para editar
-    const handleEdit = (pet: Pet) => {
+    const handleEdit = async (pet: Pet) => {
         setEditingPet(pet);
-        setFormData({ 
-            name: pet.name, 
-            race_id: pet.race_id?.toString() || '', 
-            client_id: pet.client_id?.toString() || '', 
-            color: pet.color || '', 
-            gender: pet.gender || '', 
-            age: pet.age?.toString() || '' 
-        });
         setFormErrors({});
         setOpenModal(true);
+        
+        // Intentar obtener la información completa de la mascota desde la API
+        let petData = pet;
+        try {
+            const response = await fetch(`/api/pets/${pet.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                petData = data.data || data;
+            }
+        } catch (err) {
+            console.error('Error al cargar datos completos de la mascota:', err);
+        }
+        
+        // Establecer la foto actual si existe (usar datos actualizados)
+        if (petData.photo) {
+            // Si la foto es una URL completa, usarla directamente
+            // Si es solo el nombre del archivo, construir la URL completa
+            const baseUrl = API_CONFIG.baseURL.replace('/api', '');
+            const photoUrl = petData.photo.startsWith('http') 
+                ? petData.photo 
+                : `${baseUrl}/storage/${petData.photo}`;
+            setPhotoUrl(photoUrl);
+            setPhotoPreview(null);
+        } else {
+            setPhotoUrl(null);
+            setPhotoPreview(null);
+        }
+        setPhotoFile(null);
+        
+        // Cargar todas las razas para encontrar el type_pet_id de la raza actual
+        try {
+            const allRaces = await loadAllRaces();
+            const currentRace = allRaces.find((r: any) => r.id === petData.race_id);
+            const typePetId = currentRace?.type_pet_id?.toString() || 
+                             petData.race?.type_pet_id?.toString() || 
+                             '';
+            
+            if (typePetId) {
+                // Cargar las razas filtradas por el tipo de mascota
+                await loadRaces(typePetId);
+                // Establecer el formData después de cargar las razas
+                setFormData({ 
+                    name: petData.name || '', 
+                    type_pet_id: typePetId,
+                    race_id: petData.race_id?.toString() || '', 
+                    client_id: petData.client_id?.toString() || '', 
+                    color: petData.color || '', 
+                    gender: petData.gender || '', 
+                    age: String(petData.age || '') 
+                });
+            } else {
+                // Si no se encuentra el type_pet_id, dejar vacío y el usuario deberá seleccionar
+                setFormData({ 
+                    name: petData.name || '', 
+                    type_pet_id: '',
+                    race_id: petData.race_id?.toString() || '', 
+                    client_id: petData.client_id?.toString() || '', 
+                    color: petData.color || '', 
+                    gender: petData.gender || '', 
+                    age: String(petData.age || '') 
+                });
+                setRaces([]);
+            }
+        } catch (err) {
+            console.error('Error al cargar raza:', err);
+            setFormData({ 
+                name: petData.name || '', 
+                type_pet_id: '',
+                race_id: petData.race_id?.toString() || '', 
+                client_id: petData.client_id?.toString() || '', 
+                color: petData.color || '', 
+                gender: petData.gender || '', 
+                age: petData.age?.toString() || '' 
+            });
+            setRaces([]);
+        }
     };
 
     // Cerrar modal
     const handleCloseModal = () => {
         setOpenModal(false);
         setEditingPet(null);
-        setFormData({ name: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
+        setFormData({ name: '', type_pet_id: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
         setFormErrors({});
+        setRaces([]);
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        setPhotoUrl(null);
+    };
+
+    // Manejar cambio de tipo de mascota
+    const handleTypePetChange = async (typePetId: string) => {
+        setFormData({ ...formData, type_pet_id: typePetId, race_id: '' });
+        await loadRaces(typePetId);
+    };
+
+    // Manejar selección de foto
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validar que sea una imagen
+            if (!file.type.startsWith('image/')) {
+                enqueueSnackbar('Por favor seleccione un archivo de imagen', { variant: 'error' });
+                return;
+            }
+            
+            // Validar tamaño (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                enqueueSnackbar('La imagen no debe exceder 5MB', { variant: 'error' });
+                return;
+            }
+
+            setPhotoFile(file);
+            setPhotoUrl(null); // Limpiar URL anterior si existe
+            
+            // Crear preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Eliminar foto
+    const handleRemovePhoto = () => {
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        setPhotoUrl(null);
+        // Resetear el input file
+        const fileInput = document.getElementById('photo-input') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
     };
 
     // Guardar mascota (crear o actualizar)
@@ -304,41 +510,71 @@ function PetsPage() {
             const url = editingPet ? `/api/pets/${editingPet.id}` : '/api/pets';
             const method = editingPet ? 'PUT' : 'POST';
 
-            const dataToSend = {
-                name: formData.name,
-                race_id: parseInt(formData.race_id),
-                client_id: parseInt(formData.client_id),
-                color: formData.color,
-                gender: formData.gender,
-                age: parseInt(formData.age),
-            };
+            // Si hay foto, usar FormData, sino JSON
+            if (photoFile) {
+                const formDataToSend = new FormData();
+                formDataToSend.append('name', formData.name);
+                formDataToSend.append('race_id', formData.race_id);
+                formDataToSend.append('client_id', formData.client_id);
+                formDataToSend.append('color', formData.color);
+                formDataToSend.append('gender', formData.gender);
+                formDataToSend.append('age', formData.age);
+                formDataToSend.append('photo', photoFile);
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSend),
-            });
+                const response = await fetch(url, {
+                    method,
+                    body: formDataToSend,
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (!response.ok) {
-                if (data.errors) {
-                    setFormErrors(data.errors);
-                } else {
-                    setFormErrors({ general: data.message || data.error || 'Error al guardar mascota' });
+                if (!response.ok) {
+                    if (data.errors) {
+                        setFormErrors(data.errors);
+                    } else {
+                        setFormErrors({ general: data.message || data.error || 'Error al guardar mascota' });
+                    }
+                    return;
                 }
-                return;
-            }
 
-            handleCloseModal();
-            loadPets();
-            // Show success snackbar
-            enqueueSnackbar(editingPet ? 'Mascota actualizada correctamente' : 'Mascota creada correctamente', { variant: 'success' });
+                handleCloseModal();
+                loadPets();
+                enqueueSnackbar(editingPet ? 'Mascota actualizada correctamente' : 'Mascota creada correctamente', { variant: 'success' });
+            } else {
+                const dataToSend = {
+                    name: formData.name,
+                    race_id: parseInt(formData.race_id),
+                    client_id: parseInt(formData.client_id),
+                    color: formData.color,
+                    gender: formData.gender,
+                    age: formData.age,
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataToSend),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.errors) {
+                        setFormErrors(data.errors);
+                    } else {
+                        setFormErrors({ general: data.message || data.error || 'Error al guardar mascota' });
+                    }
+                    return;
+                }
+
+                handleCloseModal();
+                loadPets();
+                enqueueSnackbar(editingPet ? 'Mascota actualizada correctamente' : 'Mascota creada correctamente', { variant: 'success' });
+            }
         } catch (err) {
             setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar mascota' });
-            // Show error snackbar
             enqueueSnackbar(editingPet ? 'Error al actualizar mascota' : 'Error al crear mascota', { variant: 'error' });
         } finally {
             setSubmitting(false);
@@ -490,6 +726,70 @@ function PetsPage() {
                             {formErrors.general}
                         </Alert>
                     )}
+                    {/* Campo de foto */}
+                    <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                            <Avatar
+                                src={photoPreview || photoUrl || undefined}
+                                sx={{
+                                    width: 120,
+                                    height: 120,
+                                    bgcolor: 'grey.200',
+                                    boxShadow: 2,
+                                }}
+                            >
+                                {!photoPreview && !photoUrl && <PetsIcon sx={{ fontSize: 60, color: 'grey.400' }} />}
+                            </Avatar>
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="photo-input"
+                                type="file"
+                                onChange={handlePhotoChange}
+                            />
+                            <label htmlFor="photo-input">
+                                <IconButton
+                                    component="span"
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        bgcolor: 'primary.main',
+                                        color: 'white',
+                                        '&:hover': {
+                                            bgcolor: 'primary.dark',
+                                        },
+                                        width: 36,
+                                        height: 36,
+                                    }}
+                                >
+                                    <CameraAltIcon fontSize="small" />
+                                </IconButton>
+                            </label>
+                            {(photoPreview || photoUrl) && (
+                                <IconButton
+                                    onClick={handleRemovePhoto}
+                                    sx={{
+                                        position: 'absolute',
+                                        bottom: 8,
+                                        right: 8,
+                                        bgcolor: 'error.main',
+                                        color: 'white',
+                                        '&:hover': {
+                                            bgcolor: 'error.dark',
+                                        },
+                                        width: 28,
+                                        height: 28,
+                                    }}
+                                >
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                            )}
+                        </Box>
+                        {formErrors.photo && (
+                            <FormHelperText error>{formErrors.photo}</FormHelperText>
+                        )}
+                    </Box>
                     <TextField
                         autoFocus
                         label="Nombre"
@@ -502,13 +802,30 @@ function PetsPage() {
                         helperText={formErrors.name}
                         sx={{ mb: 2 }}
                     />
+                    <FormControl fullWidth size="small" error={!!formErrors.type_pet_id} sx={{ mb: 2 }}>
+                        <InputLabel>Tipo de Mascota</InputLabel>
+                        <Select
+                            value={formData.type_pet_id}
+                            label="Tipo de Mascota"
+                            onChange={(e) => handleTypePetChange(e.target.value)}
+                            disabled={loadingTypePets}
+                        >
+                            {typePets.map((typePet) => (
+                                <MenuItem key={typePet.id} value={typePet.id.toString()}>
+                                    {typePet.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {formErrors.type_pet_id && <FormHelperText>{formErrors.type_pet_id}</FormHelperText>}
+                        {loadingTypePets && <FormHelperText>Cargando tipos de mascotas...</FormHelperText>}
+                    </FormControl>
                     <FormControl fullWidth size="small" error={!!formErrors.race_id} sx={{ mb: 2 }}>
                         <InputLabel>Raza</InputLabel>
                         <Select
                             value={formData.race_id}
                             label="Raza"
                             onChange={(e) => setFormData({ ...formData, race_id: e.target.value })}
-                            disabled={loadingRaces}
+                            disabled={loadingRaces || !formData.type_pet_id}
                         >
                             {races.map((race) => (
                                 <MenuItem key={race.id} value={race.id.toString()}>
@@ -518,6 +835,7 @@ function PetsPage() {
                         </Select>
                         {formErrors.race_id && <FormHelperText>{formErrors.race_id}</FormHelperText>}
                         {loadingRaces && <FormHelperText>Cargando razas...</FormHelperText>}
+                        {!formData.type_pet_id && !loadingRaces && <FormHelperText>Seleccione primero un tipo de mascota</FormHelperText>}
                     </FormControl>
                     <FormControl fullWidth size="small" error={!!formErrors.client_id} sx={{ mb: 2 }}>
                         <InputLabel>Cliente</InputLabel>
@@ -564,15 +882,15 @@ function PetsPage() {
                     </FormControl>
                     <TextField
                         label="Edad"
-                        type="number"
+                        type="text"
                         fullWidth
                         variant="outlined"
                         size="small"
                         value={formData.age}
                         onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                         error={!!formErrors.age}
-                        helperText={formErrors.age}
-                        inputProps={{ min: 0 }}
+                        helperText={formErrors.age || 'Ejemplo: 2 años, 3 meses'}
+                        placeholder="Ejemplo: 2 años, 3 meses"
                         sx={{ mb: 2 }}
                     />
                 </DialogContent>

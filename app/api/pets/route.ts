@@ -98,15 +98,27 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
         }
 
-        const body = await req.json();
+        // Verificar si es FormData o JSON
+        const contentType = req.headers.get('content-type') || '';
+        let body: any;
+        let headers: Record<string, string>;
 
-        // Obtener headers con token de autenticación
-        const headers = await getAuthHeaders();
+        if (contentType.includes('multipart/form-data')) {
+            // Es FormData
+            const formData = await req.formData();
+            body = formData;
+            // No incluir Content-Type para FormData, el navegador lo establece automáticamente
+            headers = await getAuthHeaders(false);
+        } else {
+            // Es JSON
+            body = await req.json();
+            headers = await getAuthHeaders();
+        }
         
         const response = await fetch(`${API_CONFIG.baseURL}/pets`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(body),
+            body: body instanceof FormData ? body : JSON.stringify(body),
         });
 
         const data = await response.json();

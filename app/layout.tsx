@@ -47,6 +47,15 @@ function getNavigation(
         },
     ];
 
+    // consultas - requiere permiso 'view any consultations'
+    if (hasPermission('view any consultations') && hasRole('veterinary')) {
+        navigation.push({
+            segment: 'consultations',
+            title: 'Consultorio',
+            icon: <AssignmentIcon />,
+        });
+    }
+
     // Planes - requiere permiso 'view any plans'
     if (hasPermission('view any plans')) {
         navigation.push({
@@ -149,13 +158,13 @@ function getNavigation(
             icon: <ScheduleIcon />,
         });
     }
-    // if (hasPermission('view any addresses')) {
-    //     configurationsChildren.push({
-    //         segment: 'addresses',
-    //         title: 'Direcciones',
-    //         icon: <LocationOnIcon />,
-    //     });
-    // }
+    if (hasPermission('view any addresses')) {
+        configurationsChildren.push({
+            segment: 'addresses',
+            title: 'Direcciones',
+            icon: <LocationOnIcon />,
+        });
+    }
 
     // Solo agregar el menú de Configuraciones si tiene al menos un subitem Y es veterinario
     if (configurationsChildren.length > 0 && hasRole('veterinary')) {
