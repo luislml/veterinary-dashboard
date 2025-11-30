@@ -23,15 +23,18 @@ import {
     TableHead,
     TableRow,
     IconButton,
+    Button,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PetsIcon from '@mui/icons-material/Pets';
+import AddIcon from '@mui/icons-material/Add';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../../../lib/config';
+import PetFormDialog from '../../../components/PetFormDialog';
 
 interface Client {
     id: number;
@@ -115,6 +118,7 @@ export default function ClientDetailPage() {
     const [pets, setPets] = React.useState<Pet[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [openPetModal, setOpenPetModal] = React.useState(false);
 
     // Cargar datos del cliente
     const loadClient = React.useCallback(async () => {
@@ -269,6 +273,15 @@ export default function ClientDetailPage() {
 
                 {/* Panel derecho - Listado de mascotas */}
                 <Grid size={{xs: 12, md: 8}}>
+                    <Box sx={{ display: 'flex', justifyContent: 'end', gap: 1, mb: 3 }}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setOpenPetModal(true)}
+                        >
+                            Nueva Mascota
+                        </Button>
+                    </Box>
                     <Card>
                         <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -331,6 +344,16 @@ export default function ClientDetailPage() {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Modal para crear mascota */}
+            <PetFormDialog
+                open={openPetModal}
+                onClose={() => setOpenPetModal(false)}
+                defaultClientId={clientId}
+                onSave={() => {
+                    loadPets();
+                }}
+            />
         </PageContainer>
     );
 }
