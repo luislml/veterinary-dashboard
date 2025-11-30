@@ -13,6 +13,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -84,11 +85,20 @@ function getNavigation(
     }
 
     // Clientes - requiere permiso 'view any clients'
-    if (hasPermission('view any clients')) {
+    if (hasPermission('view any clients') && hasRole('admin')) {
         navigation.push({
             segment: 'clients',
             title: 'Clientes',
             icon: <PeopleIcon />,
+        });
+    }
+
+    // Productos - requiere permiso 'view any products'
+    if (hasPermission('view any products')) {
+        navigation.push({
+            segment: 'products',
+            title: 'Productos',
+            icon: <ShoppingCartIcon />,
         });
     }
 
@@ -117,7 +127,7 @@ function getNavigation(
     if (hasPermission('view any pets')) {
         petsChildren.push({
             segment: 'pets',
-            title: 'Registro de mascotas',
+            title: 'Lista de mascotas',
             icon: <AssignmentIcon />,
         });
     }
@@ -128,15 +138,6 @@ function getNavigation(
             title: 'Mascotas',
             icon: <EmojiNatureIcon />,
             children: petsChildren,
-        });
-    }
-
-    // al veterinario solo se le muestra el menú de Mascotas
-    if (hasPermission('view any pets') && hasRole('veterinary')) {
-        navigation.push({
-            segment: 'pets',
-            title: 'Mascotas',
-            icon: <EmojiNatureIcon />,
         });
     }
 

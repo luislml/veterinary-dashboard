@@ -24,12 +24,14 @@ import {
     TableRow,
     IconButton,
     Button,
+    Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PetsIcon from '@mui/icons-material/Pets';
 import AddIcon from '@mui/icons-material/Add';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
@@ -307,6 +309,7 @@ export default function ClientDetailPage() {
                                                 <TableCell><strong>Color</strong></TableCell>
                                                 <TableCell><strong>Género</strong></TableCell>
                                                 <TableCell><strong>Edad</strong></TableCell>
+                                                <TableCell><strong>Acciones</strong></TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -333,6 +336,16 @@ export default function ClientDetailPage() {
                                                             {GENDER_OPTIONS[pet.gender] || pet.gender}
                                                         </TableCell>
                                                         <TableCell>{pet.age || '-'}</TableCell>
+                                                        <TableCell align="right">
+                                                            <Tooltip title="Ver detalles" placement="top">
+                                                                <IconButton
+                                                                    size="small"
+                                                                    
+                                                                >
+                                                                    <AssignmentIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </TableCell>
                                                     </TableRow>
                                                 );
                                             })}
