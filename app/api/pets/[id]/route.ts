@@ -72,17 +72,21 @@ export async function PUT(
         if (contentType.includes('multipart/form-data')) {
             // Es FormData
             const formData = await req.formData();
+            // Agregar _method PATCH para Laravel
+            formData.append('_method', 'PATCH');
             body = formData;
             // No incluir Content-Type para FormData, el navegador lo establece automáticamente
             headers = await getAuthHeaders(false);
         } else {
             // Es JSON
             body = await req.json();
+            // Agregar _method PATCH para Laravel
+            body._method = 'PATCH';
             headers = await getAuthHeaders();
         }
 
         const response = await fetch(`${API_CONFIG.baseURL}/pets/${id}`, {
-            method: 'PUT',
+            method: 'POST',
             headers,
             body: body instanceof FormData ? body : JSON.stringify(body),
         });

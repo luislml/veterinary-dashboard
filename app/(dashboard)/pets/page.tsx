@@ -69,7 +69,7 @@ interface Pet {
     color: string;
     gender: string;
     age: string | number;
-    photo?: string;
+    image?: string;
     race?: {
         id: number;
         name: string;
@@ -141,9 +141,9 @@ function PetsPage() {
         gender: '', 
         age: '' 
     });
-    const [photoFile, setPhotoFile] = React.useState<File | null>(null);
-    const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
-    const [photoUrl, setPhotoUrl] = React.useState<string | null>(null);
+    const [imageFile, setImageFile] = React.useState<File | null>(null);
+    const [imagePreview, setImagePreview] = React.useState<string | null>(null);
+    const [imageUrl, setImageUrl] = React.useState<string | null>(null);
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
     const [page, setPage] = React.useState(1);
@@ -354,9 +354,9 @@ function PetsPage() {
         setFormData({ name: '', type_pet_id: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
         setFormErrors({});
         setRaces([]);
-        setPhotoFile(null);
-        setPhotoPreview(null);
-        setPhotoUrl(null);
+        setImageFile(null);
+        setImagePreview(null);
+        setImageUrl(null);
         setOpenModal(true);
     };
 
@@ -378,21 +378,23 @@ function PetsPage() {
             console.error('Error al cargar datos completos de la mascota:', err);
         }
         
-        // Establecer la foto actual si existe (usar datos actualizados)
-        if (petData.photo) {
-            // Si la foto es una URL completa, usarla directamente
+        // Establecer la imagen actual si existe (usar datos actualizados)
+        console.log(petData);
+        if (petData.image) {
+            console.log(petData.image);
+            // Si la imagen es una URL completa, usarla directamente
             // Si es solo el nombre del archivo, construir la URL completa
             const baseUrl = API_CONFIG.baseURL.replace('/api', '');
-            const photoUrl = petData.photo.startsWith('http') 
-                ? petData.photo 
-                : `${baseUrl}/storage/${petData.photo}`;
-            setPhotoUrl(photoUrl);
-            setPhotoPreview(null);
+            const imageUrl = petData.image.startsWith('http') 
+                ? petData.image 
+                : `${baseUrl}/storage/${petData.image}`;
+            setImageUrl(imageUrl);
+            setImagePreview(null);
         } else {
-            setPhotoUrl(null);
-            setPhotoPreview(null);
+            setImageUrl(null);
+            setImagePreview(null);
         }
-        setPhotoFile(null);
+        setImageFile(null);
         
         // Cargar todas las razas para encontrar el type_pet_id de la raza actual
         try {
@@ -450,9 +452,9 @@ function PetsPage() {
         setFormData({ name: '', type_pet_id: '', race_id: '', client_id: '', color: '', gender: '', age: '' });
         setFormErrors({});
         setRaces([]);
-        setPhotoFile(null);
-        setPhotoPreview(null);
-        setPhotoUrl(null);
+        setImageFile(null);
+        setImagePreview(null);
+        setImageUrl(null);
     };
 
     // Manejar cambio de tipo de mascota
@@ -461,8 +463,8 @@ function PetsPage() {
         await loadRaces(typePetId);
     };
 
-    // Manejar selección de foto
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Manejar selección de imagen
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Validar que sea una imagen
@@ -477,25 +479,25 @@ function PetsPage() {
                 return;
             }
 
-            setPhotoFile(file);
-            setPhotoUrl(null); // Limpiar URL anterior si existe
+            setImageFile(file);
+            setImageUrl(null); // Limpiar URL anterior si existe
             
             // Crear preview
             const reader = new FileReader();
             reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
+                setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    // Eliminar foto
-    const handleRemovePhoto = () => {
-        setPhotoFile(null);
-        setPhotoPreview(null);
-        setPhotoUrl(null);
+    // Eliminar imagen
+    const handleRemoveImage = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        setImageUrl(null);
         // Resetear el input file
-        const fileInput = document.getElementById('photo-input') as HTMLInputElement;
+        const fileInput = document.getElementById('image-input') as HTMLInputElement;
         if (fileInput) {
             fileInput.value = '';
         }
@@ -510,8 +512,8 @@ function PetsPage() {
             const url = editingPet ? `/api/pets/${editingPet.id}` : '/api/pets';
             const method = editingPet ? 'PUT' : 'POST';
 
-            // Si hay foto, usar FormData, sino JSON
-            if (photoFile) {
+            // Si hay imagen, usar FormData, sino JSON
+            if (imageFile) {
                 const formDataToSend = new FormData();
                 formDataToSend.append('name', formData.name);
                 formDataToSend.append('race_id', formData.race_id);
@@ -519,7 +521,11 @@ function PetsPage() {
                 formDataToSend.append('color', formData.color);
                 formDataToSend.append('gender', formData.gender);
                 formDataToSend.append('age', formData.age);
-                formDataToSend.append('photo', photoFile);
+                formDataToSend.append('image', imageFile);
+                // Agregar _method PATCH para updates
+                if (editingPet) {
+                    formDataToSend.append('_method', 'PATCH');
+                }
 
                 const response = await fetch(url, {
                     method,
@@ -541,7 +547,7 @@ function PetsPage() {
                 loadPets();
                 enqueueSnackbar(editingPet ? 'Mascota actualizada correctamente' : 'Mascota creada correctamente', { variant: 'success' });
             } else {
-                const dataToSend = {
+                const dataToSend: any = {
                     name: formData.name,
                     race_id: parseInt(formData.race_id),
                     client_id: parseInt(formData.client_id),
@@ -549,6 +555,10 @@ function PetsPage() {
                     gender: formData.gender,
                     age: formData.age,
                 };
+                // Agregar _method PATCH para updates
+                if (editingPet) {
+                    dataToSend._method = 'PATCH';
+                }
 
                 const response = await fetch(url, {
                     method,
@@ -726,11 +736,11 @@ function PetsPage() {
                             {formErrors.general}
                         </Alert>
                     )}
-                    {/* Campo de foto */}
+                    {/* Campo de imagen */}
                     <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Box sx={{ position: 'relative', display: 'inline-block' }}>
                             <Avatar
-                                src={photoPreview || photoUrl || undefined}
+                                src={imagePreview || imageUrl || undefined}
                                 sx={{
                                     width: 120,
                                     height: 120,
@@ -738,16 +748,16 @@ function PetsPage() {
                                     boxShadow: 2,
                                 }}
                             >
-                                {!photoPreview && !photoUrl && <PetsIcon sx={{ fontSize: 60, color: 'grey.400' }} />}
+                                {!imagePreview && !imageUrl && <PetsIcon sx={{ fontSize: 60, color: 'grey.400' }} />}
                             </Avatar>
                             <input
                                 accept="image/*"
                                 style={{ display: 'none' }}
-                                id="photo-input"
+                                id="image-input"
                                 type="file"
-                                onChange={handlePhotoChange}
+                                onChange={handleImageChange}
                             />
-                            <label htmlFor="photo-input">
+                            <label htmlFor="image-input">
                                 <IconButton
                                     component="span"
                                     sx={{
@@ -766,9 +776,9 @@ function PetsPage() {
                                     <CameraAltIcon fontSize="small" />
                                 </IconButton>
                             </label>
-                            {(photoPreview || photoUrl) && (
+                            {(imagePreview || imageUrl) && (
                                 <IconButton
-                                    onClick={handleRemovePhoto}
+                                    onClick={handleRemoveImage}
                                     sx={{
                                         position: 'absolute',
                                         bottom: 8,
@@ -786,8 +796,8 @@ function PetsPage() {
                                 </IconButton>
                             )}
                         </Box>
-                        {formErrors.photo && (
-                            <FormHelperText error>{formErrors.photo}</FormHelperText>
+                        {formErrors.image && (
+                            <FormHelperText error>{formErrors.image}</FormHelperText>
                         )}
                     </Box>
                     <TextField
