@@ -14,6 +14,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
@@ -98,7 +101,31 @@ function getNavigation(
         navigation.push({
             segment: 'products',
             title: 'Productos',
+            icon: <Inventory2Icon />,
+        });
+    }
+
+    // compras y ventas - menu con subitems
+    const purchasesAndSalesChildren = [];
+    if (hasPermission('view any shoppings')) {
+        purchasesAndSalesChildren.push({
+            segment: 'shoppings',
+            title: 'Compras',
+            icon: <AddShoppingCartIcon />,
+        });
+    }
+    if (hasPermission('view any sales')) {
+        purchasesAndSalesChildren.push({
+            segment: 'sales',
+            title: 'Ventas',
+            icon: <ShoppingCartCheckoutIcon />,
+        });
+    }
+    if (purchasesAndSalesChildren.length > 0 && hasRole('veterinary')) {
+        navigation.push({
+            title: 'Compras y ventas',
             icon: <ShoppingCartIcon />,
+            children: purchasesAndSalesChildren,
         });
     }
 
