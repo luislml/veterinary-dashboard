@@ -31,12 +31,14 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PetsIcon from '@mui/icons-material/Pets';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../../../lib/config';
 import PetFormDialog from '../../../components/PetFormDialog';
+import ClientFormDialog from '../../../components/ClientFormDialog';
 
 interface Client {
     id: number;
@@ -121,7 +123,7 @@ export default function ClientDetailPage() {
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [openPetModal, setOpenPetModal] = React.useState(false);
-
+    const [openClientModal, setOpenClientModal] = React.useState(false);
     // Cargar datos del cliente
     const loadClient = React.useCallback(async () => {
         if (!clientId) return;
@@ -216,9 +218,13 @@ export default function ClientDetailPage() {
                         <CardContent>
                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
                                 <Avatar {...stringAvatar(fullName)} />
-                                <Typography variant="h6" sx={{ mt: 2, textAlign: 'center' }}>
+                                <Typography variant="h6" sx={{ mt: 2, textAlign: 'center', mb: 2 }}>
                                     {fullName}
                                 </Typography>
+                                {/* editar cliente */}
+                                <Button variant="contained" color="primary" size="small" onClick={() => setOpenClientModal(true)}>
+                                    Editar datos
+                                </Button>
                             </Box>
 
                             <Divider sx={{ my: 2 }} />
@@ -340,7 +346,7 @@ export default function ClientDetailPage() {
                                                             <Tooltip title="Ver detalles" placement="top">
                                                                 <IconButton
                                                                     size="small"
-                                                                    
+                                                                    onClick={() => router.push(`/pets/${pet.id}`)}
                                                                 >
                                                                     <AssignmentIcon />
                                                                 </IconButton>
@@ -365,6 +371,16 @@ export default function ClientDetailPage() {
                 defaultClientId={clientId}
                 onSave={() => {
                     loadPets();
+                }}
+            />
+
+            {/* Modal para editar cliente */}
+            <ClientFormDialog
+                open={openClientModal}
+                onClose={() => setOpenClientModal(false)}
+                client={client}
+                onSave={() => {
+                    loadClient();
                 }}
             />
         </PageContainer>

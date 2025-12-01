@@ -4,7 +4,7 @@ import { API_CONFIG } from '../../../lib/config';
 import { getAuthHeaders } from '../../../lib/auth-utils';
 
 /**
- * GET /api/consultations - Obtener lista de consultas
+ * GET /api/vaccines - Obtener lista de vacunas
  * Proxy a la API de Laravel
  */
 export async function GET(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         const petId = searchParams.get('pet_id');
 
         // Construir URL de Laravel
-        const laravelUrl = new URL(`${API_CONFIG.baseURL}/consultations`);
+        const laravelUrl = new URL(`${API_CONFIG.baseURL}/vaccines`);
         laravelUrl.searchParams.append('page', page);
         laravelUrl.searchParams.append('per_page', perPage);
         
@@ -67,14 +67,14 @@ export async function GET(req: NextRequest) {
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al obtener consultas' },
+                { error: data.message || 'Error al obtener vacunas' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en GET /api/consultations:', error);
+        console.error('Error en GET /api/vaccines:', error);
         
         // Si es un error de conexión, devolver un mensaje más claro
         if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST /api/consultations - Crear una nueva consulta
+ * POST /api/vaccines - Crear una nueva vacuna
  * Proxy a la API de Laravel
  */
 export async function POST(req: NextRequest) {
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/consultations`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/vaccines`, {
             method: 'POST',
             headers,
             body: JSON.stringify(body),
@@ -118,14 +118,14 @@ export async function POST(req: NextRequest) {
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al crear consulta', errors: data.errors },
+                { error: data.message || 'Error al crear vacuna', errors: data.errors },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data, { status: 201 });
     } catch (error) {
-        console.error('Error en POST /api/consultations:', error);
+        console.error('Error en POST /api/vaccines:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

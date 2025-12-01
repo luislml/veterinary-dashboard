@@ -35,6 +35,7 @@ export interface Pet {
     gender: string;
     age: string | number;
     image?: string;
+    images?: object[] | null;
     race?: {
         id: number;
         name: string;
@@ -265,11 +266,11 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                     }
                     
                     // Establecer la imagen actual si existe
-                    if (petData.image) {
+                    if (petData.images) {
                         const baseUrl = API_CONFIG.baseURL.replace('/api', '');
-                        const imageUrl = petData.image.startsWith('http') 
-                            ? petData.image 
-                            : `${baseUrl}/storage/${petData.image}`;
+                        const imageUrl = petData.images && petData.images.length > 0 
+                            ? `${baseUrl}/${(petData.images as any)[petData.images.length - 1].url}`
+                            : null;
                         setImageUrl(imageUrl);
                         setImagePreview(null);
                     } else {

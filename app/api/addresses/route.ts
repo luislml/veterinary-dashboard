@@ -4,7 +4,7 @@ import { API_CONFIG } from '../../../lib/config';
 import { getAuthHeaders } from '../../../lib/auth-utils';
 
 /**
- * GET /api/consultations - Obtener lista de consultas
+ * GET /api/addresses - Obtener lista de direcciones
  * Proxy a la API de Laravel
  */
 export async function GET(req: NextRequest) {
@@ -22,10 +22,9 @@ export async function GET(req: NextRequest) {
         const sortOrder = searchParams.get('sort_order') || 'asc';
         const filter = searchParams.get('filter');
         const veterinaryId = searchParams.get('veterinary_id');
-        const petId = searchParams.get('pet_id');
 
         // Construir URL de Laravel
-        const laravelUrl = new URL(`${API_CONFIG.baseURL}/consultations`);
+        const laravelUrl = new URL(`${API_CONFIG.baseURL}/addresses`);
         laravelUrl.searchParams.append('page', page);
         laravelUrl.searchParams.append('per_page', perPage);
         
@@ -40,10 +39,6 @@ export async function GET(req: NextRequest) {
         
         if (veterinaryId) {
             laravelUrl.searchParams.append('veterinary_id', veterinaryId);
-        }
-        
-        if (petId) {
-            laravelUrl.searchParams.append('pet_id', petId);
         }
 
         // Obtener headers con token de autenticación
@@ -67,14 +62,14 @@ export async function GET(req: NextRequest) {
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al obtener consultas' },
+                { error: data.message || 'Error al obtener direcciones' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en GET /api/consultations:', error);
+        console.error('Error en GET /api/addresses:', error);
         
         // Si es un error de conexión, devolver un mensaje más claro
         if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -92,7 +87,7 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST /api/consultations - Crear una nueva consulta
+ * POST /api/addresses - Crear una nueva dirección
  * Proxy a la API de Laravel
  */
 export async function POST(req: NextRequest) {
@@ -108,7 +103,7 @@ export async function POST(req: NextRequest) {
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/consultations`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/addresses`, {
             method: 'POST',
             headers,
             body: JSON.stringify(body),
@@ -118,14 +113,14 @@ export async function POST(req: NextRequest) {
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al crear consulta', errors: data.errors },
+                { error: data.message || 'Error al crear dirección', errors: data.errors },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data, { status: 201 });
     } catch (error) {
-        console.error('Error en POST /api/consultations:', error);
+        console.error('Error en POST /api/addresses:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

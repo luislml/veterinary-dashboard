@@ -216,11 +216,12 @@ function ClientsPage() {
             {/* Formulario de búsqueda */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <TextField
-                    label="Buscar cliente"
+                    label="Buscar"
                     fullWidth
                     variant="outlined"
                     size="small"
                     value={searchTerm}
+                    placeholder="Buscar cliente, teléfono, CI, nombre de la mascota"
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
