@@ -300,12 +300,12 @@ function SalesPage() {
                                     <StyledTableCell>
                                         <FormControl size="small" sx={{ minWidth: 120 }}>
                                             <Select
-                                                value={sale.state || 'paid'}
+                                                value={sale.state || 'Completado'}
                                                 onChange={(e) => handleStateChange(sale.id, e.target.value, sale.state || 'paid')}
                                                 sx={{ fontSize: '0.875rem' }}
                                             >
-                                                <MenuItem value="paid">Paid</MenuItem>
-                                                <MenuItem value="canceled">Canceled</MenuItem>
+                                                <MenuItem value="Completado">Completado</MenuItem>
+                                                <MenuItem value="Cancelado">Cancelado</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </StyledTableCell>

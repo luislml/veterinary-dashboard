@@ -14,12 +14,6 @@ import {
     Button,
     Tabs,
     Tab,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,6 +27,9 @@ import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../../../lib/config';
 import PetFormDialog from '../../../components/PetFormDialog';
+import ConsultationList from '../../../components/ConsultationList';
+import VaccineList from '../../../components/VaccineList';
+import { SnackbarProvider } from 'notistack';
 
 interface Pet {
     id: number;
@@ -60,23 +57,7 @@ interface Pet {
     updated_at?: string;
 }
 
-interface Consultation {
-    id: number;
-    description: string;
-    pet_id: number;
-    date: string;
-    created_at?: string;
-    updated_at?: string;
-}
 
-interface Vaccine {
-    id: number;
-    name: string;
-    pet_id: number;
-    date: string;
-    created_at?: string;
-    updated_at?: string;
-}
 
 const GENDER_OPTIONS: Record<string, string> = {
     'male': 'Macho',
@@ -136,22 +117,18 @@ function TabPanel(props: TabPanelProps) {
     );
 }
 
-export default function PetDetailPage() {
+function PetDetailPage() {
     const router = useRouter();
     const params = useParams();
     const petId = params?.id as string;
 
     const [pet, setPet] = React.useState<Pet | null>(null);
-    const [consultations, setConsultations] = React.useState<Consultation[]>([]);
-    const [vaccines, setVaccines] = React.useState<Vaccine[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [openPetModal, setOpenPetModal] = React.useState(false);
     const [tabValue, setTabValue] = React.useState(0);
-    const [loadingConsultations, setLoadingConsultations] = React.useState(false);
-    const [loadingVaccines, setLoadingVaccines] = React.useState(false);
-    const [errorConsultations, setErrorConsultations] = React.useState<string | null>(null);
-    const [errorVaccines, setErrorVaccines] = React.useState<string | null>(null);
+    const [consultationsCount, setConsultationsCount] = React.useState(0);
+    const [vaccinesCount, setVaccinesCount] = React.useState(0);
 
     // Cargar datos de la mascota
     const loadPet = React.useCallback(async () => {
@@ -176,73 +153,10 @@ export default function PetDetailPage() {
         }
     }, [petId]);
 
-    // Cargar consultas
-    const loadConsultations = React.useCallback(async () => {
-        if (!petId) return;
-
-        try {
-            setLoadingConsultations(true);
-            setErrorConsultations(null);
-
-            const response = await fetch(`/api/consultations?pet_id=${petId}&paginate=false`);
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar consultas');
-            }
-
-            if (data.data) {
-                setConsultations(Array.isArray(data.data) ? data.data : []);
-            } else if (Array.isArray(data)) {
-                setConsultations(data);
-            } else {
-                setConsultations([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar consultas:', err);
-            setErrorConsultations(err instanceof Error ? err.message : 'Error al cargar consultas');
-            setConsultations([]);
-        } finally {
-            setLoadingConsultations(false);
-        }
-    }, [petId]);
-
-    // Cargar vacunas
-    const loadVaccines = React.useCallback(async () => {
-        if (!petId) return;
-
-        try {
-            setLoadingVaccines(true);
-            setErrorVaccines(null);
-
-            const response = await fetch(`/api/vaccines?pet_id=${petId}&paginate=false`);
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar vacunas');
-            }
-
-            if (data.data) {
-                setVaccines(Array.isArray(data.data) ? data.data : []);
-            } else if (Array.isArray(data)) {
-                setVaccines(data);
-            } else {
-                setVaccines([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar vacunas:', err);
-            setErrorVaccines(err instanceof Error ? err.message : 'Error al cargar vacunas');
-            setVaccines([]);
-        } finally {
-            setLoadingVaccines(false);
-        }
-    }, [petId]);
 
     React.useEffect(() => {
         loadPet();
-        loadConsultations();
-        loadVaccines();
-    }, [loadPet, loadConsultations, loadVaccines]);
+    }, [loadPet]);
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
@@ -392,91 +306,23 @@ export default function PetDetailPage() {
                         <CardContent>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="pet details tabs">
-                                    <Tab label={`Consultas (${consultations.length})`} />
-                                    <Tab label={`Vacunas (${vaccines.length})`} />
+                                    <Tab label={`Consultas (${consultationsCount})`} />
+                                    <Tab label={`Vacunas (${vaccinesCount})`} />
                                 </Tabs>
                             </Box>
 
                             <TabPanel value={tabValue} index={0}>
-                                {loadingConsultations ? (
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                                        <CircularProgress />
-                                    </Box>
-                                ) : errorConsultations ? (
-                                    <Alert severity="error" sx={{ mt: 2 }}>
-                                        {errorConsultations}
-                                    </Alert>
-                                ) : consultations.length === 0 ? (
-                                    <Alert severity="info" sx={{ mt: 2 }}>
-                                        Esta mascota no tiene consultas registradas.
-                                    </Alert>
-                                ) : (
-                                    <TableContainer>
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Fecha</strong></TableCell>
-                                                    <TableCell><strong>Descripción</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {consultations.map((consultation) => (
-                                                    <TableRow key={consultation.id}>
-                                                        <TableCell>
-                                                            {consultation.date 
-                                                                ? new Date(consultation.date).toLocaleDateString()
-                                                                : consultation.created_at
-                                                                ? new Date(consultation.created_at).toLocaleDateString()
-                                                                : '-'}
-                                                        </TableCell>
-                                                        <TableCell>{consultation.description || '-'}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                )}
+                                <ConsultationList 
+                                    petId={Number(petId)} 
+                                    onUpdateCount={(count) => setConsultationsCount(count)}
+                                />
                             </TabPanel>
 
                             <TabPanel value={tabValue} index={1}>
-                                {loadingVaccines ? (
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                                        <CircularProgress />
-                                    </Box>
-                                ) : errorVaccines ? (
-                                    <Alert severity="error" sx={{ mt: 2 }}>
-                                        {errorVaccines}
-                                    </Alert>
-                                ) : vaccines.length === 0 ? (
-                                    <Alert severity="info" sx={{ mt: 2 }}>
-                                        Esta mascota no tiene vacunas registradas.
-                                    </Alert>
-                                ) : (
-                                    <TableContainer>
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell><strong>Fecha</strong></TableCell>
-                                                    <TableCell><strong>Nombre</strong></TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {vaccines.map((vaccine) => (
-                                                    <TableRow key={vaccine.id}>
-                                                        <TableCell>
-                                                            {vaccine.date 
-                                                                ? new Date(vaccine.date).toLocaleDateString()
-                                                                : vaccine.created_at
-                                                                ? new Date(vaccine.created_at).toLocaleDateString()
-                                                                : '-'}
-                                                        </TableCell>
-                                                        <TableCell>{vaccine.name || '-'}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                )}
+                                <VaccineList 
+                                    petId={Number(petId)} 
+                                    onUpdateCount={(count) => setVaccinesCount(count)}
+                                />
                             </TabPanel>
                         </CardContent>
                     </Card>
@@ -493,6 +339,14 @@ export default function PetDetailPage() {
                 }}
             />
         </PageContainer>
+    );
+}
+
+export default function PetDetailPageWrapper() {
+    return (
+        <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+            <PetDetailPage />
+        </SnackbarProvider>
     );
 }
 

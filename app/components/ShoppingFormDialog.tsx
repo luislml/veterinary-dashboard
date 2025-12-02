@@ -175,7 +175,8 @@ export default function ShoppingFormDialog({ open, onClose, onSave }: ShoppingFo
         try {
             const dataToSend = {
                 amount: total,
-                state: 'paid',
+                state: 'Completado',
+                veterinary_id: selectedVeterinary?.id,
                 products: cart.map(item => ({
                     product_id: item.product_id,
                     quantity: item.quantity,

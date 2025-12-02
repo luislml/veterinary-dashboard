@@ -245,7 +245,8 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
                 amount: total,
                 client_id: parseInt(formData.client_id),
                 discount: parseFloat(formData.discount) || 0,
-                state: 'paid',
+                state: 'Completado',
+                veterinary_id: selectedVeterinary?.id,
                 products: cart.map(item => ({
                     product_id: item.product_id,
                     quantity: item.quantity,
