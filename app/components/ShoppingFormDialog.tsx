@@ -285,29 +285,29 @@ export default function ShoppingFormDialog({ open, onClose, onSave }: ShoppingFo
                     </Alert>
                 )}
                 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Buscador de productos */}
-                    <Box>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Buscar Productos</Typography>
-                        <TextField
-                            fullWidth
-                            size="small"
-                            placeholder="Buscar productos... (Presiona Enter para buscar)"
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            onKeyDown={handleSearchKeyDown}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                    </Box>
-
+                <Box sx={{ display: 'flex', gap: 3, height: '70vh' }}>
                     {/* Listado de productos */}
-                    <Box sx={{ flex: 1, overflow: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, p: 2 }}>
+                    <Box sx={{ flex: 1, border: 1, overflow: 'auto', width: '50%', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+                        {/* Buscador de productos */}
+                        <Box>
+                            <Typography variant="h6" sx={{ mb: 2 }}>Buscar Productos</Typography>
+                            <TextField
+                                fullWidth
+                                size="small"
+                                placeholder="Buscar productos... (Presiona Enter para buscar)"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                                 <CircularProgress />
@@ -363,7 +363,7 @@ export default function ShoppingFormDialog({ open, onClose, onSave }: ShoppingFo
                     </Box>
 
                     {/* Lista de productos en la compra */}
-                    <Box>
+                    <Box sx={{ width: '50%' }}>
                         <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                             <ShoppingCartIcon />
                             Productos en la Compra
@@ -376,7 +376,7 @@ export default function ShoppingFormDialog({ open, onClose, onSave }: ShoppingFo
                                 </Typography>
                             </Paper>
                         ) : (
-                            <TableContainer component={Paper}>
+                            <TableContainer component={Paper} sx={{ height: '80%', overflow: 'auto' }}>
                                 <Table size="small">
                                     <TableHead>
                                         <TableRow>

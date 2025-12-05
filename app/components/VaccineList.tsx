@@ -19,6 +19,11 @@ import {
     Alert,
     CircularProgress,
     Tooltip,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    FormHelperText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -53,8 +58,25 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
         name: '',
         pet_id: petId,
     });
+    const [customName, setCustomName] = React.useState('');
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
+
+    const vaccineOptions = [
+        'Feligen® CRP',
+        'Feligen® CRP + R',
+        'Leucogen®',
+        'Nobivac® DH2 Ppi',
+        'Nobivac® DH2 Ppi + L',
+        'Nobivac® DH2 Ppi + RL',
+        'Nobivac® KC',
+        'Nobivac® Lepto',
+        'Nobivac® Puppy DP',
+        'Nobivac® Rabia',
+        'Nobivac® Tricat',
+        'Nobivac® RL',
+        'otro',
+    ];
 
     // Cargar vacunas
     const loadVaccines = React.useCallback(async () => {
@@ -105,6 +127,7 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
             name: '',
             pet_id: petId,
         });
+        setCustomName('');
         setFormErrors({});
         setOpenModal(true);
     };
@@ -112,10 +135,13 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
     // Abrir modal para editar
     const handleEdit = (vaccine: Vaccine) => {
         setEditingVaccine(vaccine);
+        const name = vaccine.name || '';
+        const isCustomName = name && !vaccineOptions.includes(name);
         setFormData({
-            name: vaccine.name || '',
+            name: isCustomName ? 'otro' : name,
             pet_id: vaccine.pet_id,
         });
+        setCustomName(isCustomName ? name : '');
         setFormErrors({});
         setOpenModal(true);
     };
@@ -128,6 +154,7 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
             name: '',
             pet_id: petId,
         });
+        setCustomName('');
         setFormErrors({});
     };
 
@@ -143,7 +170,7 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
             const method = editingVaccine ? 'PUT' : 'POST';
 
             const dataToSend = {
-                name: formData.name,
+                name: formData.name === 'otro' ? customName : formData.name,
                 pet_id: formData.pet_id,
             };
 
@@ -298,19 +325,41 @@ export default function VaccineList({ petId, onUpdateCount }: VaccineListProps) 
                             {formErrors.general}
                         </Alert>
                     )}
-                    <TextField
-                        label="Nombre"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        error={!!formErrors.name}
-                        helperText={formErrors.name}
-                        placeholder="Ingrese el nombre de la vacuna..."
-                        sx={{ mb: 2 }}
-                        autoFocus
-                    />
+                    <FormControl fullWidth size="small" error={!!formErrors.name} sx={{ mb: 2 }}>
+                        <InputLabel>Nombre</InputLabel>
+                        <Select
+                            value={formData.name}
+                            label="Nombre"
+                            onChange={(e) => {
+                                setFormData({ ...formData, name: e.target.value });
+                                if (e.target.value !== 'otro') {
+                                    setCustomName('');
+                                }
+                            }}
+                            autoFocus
+                        >
+                            {vaccineOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {formErrors.name && <FormHelperText>{formErrors.name}</FormHelperText>}
+                    </FormControl>
+                    {formData.name === 'otro' && (
+                        <TextField
+                            label="Especifique el nombre"
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            value={customName}
+                            onChange={(e) => setCustomName(e.target.value)}
+                            error={!!formErrors.name}
+                            helperText={formErrors.name || 'Ingrese el nombre de la vacuna...'}
+                            placeholder="Ingrese el nombre de la vacuna..."
+                            sx={{ mb: 2 }}
+                        />
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseModal} disabled={submitting} color="error">

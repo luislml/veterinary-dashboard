@@ -17,7 +17,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
-
+import BookIcon from '@mui/icons-material/Book';
+import AnnouncementIcon from '@mui/icons-material/Announcement';
 import type { Navigation } from '@toolpad/core/AppProvider';
 import { SessionProvider, signIn, signOut } from 'next-auth/react';
 import { auth } from '../auth';
@@ -60,6 +61,16 @@ function getNavigation(
         });
     }
 
+    // anuncios - requiere permiso 'view any ads'
+    if (hasRole('veterinary')) {
+    // if (hasPermission('') && hasRole('veterinary')) {
+        navigation.push({
+            segment: 'advertisements',
+            title: 'Anuncios',
+            icon: <AnnouncementIcon />,
+        });
+    }
+
     // Planes - requiere permiso 'view any plans'
     if (hasPermission('view any plans')) {
         navigation.push({
@@ -96,6 +107,34 @@ function getNavigation(
         });
     }
 
+    // Mascotas 
+    // Tipos de mascotas - requiere permiso 'view any type-pets'
+    if (hasPermission('view any type-pets') && hasRole('admin')) {
+        navigation.push({
+            segment: 'type-pets',
+            title: 'Tipos de mascotas',
+            icon: <CategoryIcon />,
+        });
+    }
+
+    // Razas - requiere permiso 'view any races'
+    if (hasPermission('view any races') && hasRole('admin')) {
+        navigation.push({
+            segment: 'races',
+            title: 'Razas',
+            icon: <StarIcon />,
+        });
+    }
+
+    // Registro de mascotas - requiere permiso 'view any pets'
+    if (hasPermission('view any pets') && hasRole('admin')) {
+        navigation.push({
+            segment: 'pets',
+            title: 'Lista de mascotas',
+            icon: <AssignmentIcon />,
+        });
+    }
+
     navigation.push({
         kind: 'header',
         title: 'Marketplace',
@@ -125,43 +164,12 @@ function getNavigation(
             icon: <ShoppingCartCheckoutIcon />,
         });
     }
-
-    // Mascotas - menú con subitems
-    const petsChildren = [];
-    
-    // Tipos de mascotas - requiere permiso 'view any type-pets'
-    if (hasPermission('view any type-pets')) {
-        petsChildren.push({
-            segment: 'type-pets',
-            title: 'Tipos de mascotas',
-            icon: <CategoryIcon />,
-        });
-    }
-
-    // Razas - requiere permiso 'view any races'
-    if (hasPermission('view any races')) {
-        petsChildren.push({
-            segment: 'races',
-            title: 'Razas',
-            icon: <StarIcon />,
-        });
-    }
-
-    // Registro de mascotas - requiere permiso 'view any pets'
-    if (hasPermission('view any pets')) {
-        petsChildren.push({
-            segment: 'pets',
-            title: 'Lista de mascotas',
-            icon: <AssignmentIcon />,
-        });
-    }
-
-    // Solo agregar el menú de Mascotas si tiene al menos un subitem Y es admin
-    if (petsChildren.length > 0 && hasRole('admin')) {
+    // libro de compras y ventas
+    if (hasPermission('view any movements')) {
         navigation.push({
-            title: 'Mascotas',
-            icon: <EmojiNatureIcon />,
-            children: petsChildren,
+            segment: 'movements',
+            title: 'Libro de compras y ventas',
+            icon: <BookIcon />,
         });
     }
 
@@ -171,21 +179,21 @@ function getNavigation(
     });
 
     // configuraciones - menú con subitems
-    if (hasPermission('view any configurations')) {
+    if (hasPermission('view any configurations') && hasRole('veterinary')) {
         navigation.push({
             segment: 'configurations',
             title: 'Mi veterinaria',
             icon: <PetsIcon />,
         });
     }
-    if (hasPermission('view any schedules')) {
+    if (hasPermission('view any schedules') && hasRole('veterinary')) {
         navigation.push({
             segment: 'schedules',
             title: 'Horarios',
             icon: <ScheduleIcon />,
         });
     }
-    if (hasPermission('view any addresses')) {
+    if (hasPermission('view any addresses') && hasRole('veterinary')) {
         navigation.push({
             segment: 'addresses',
             title: 'Direcciones',

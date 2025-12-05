@@ -19,6 +19,11 @@ import {
     Alert,
     CircularProgress,
     Tooltip,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    FormHelperText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -55,8 +60,56 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
         description: '',
         pet_id: petId,
     });
+    const [customReason, setCustomReason] = React.useState('');
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
+
+    const reasonOptions = [
+        'Consulta general',
+        'Especialidades',
+        'Revisión/Chequeo',
+        'Acupuntura',
+        'Alergología',
+        'Anestesiología',
+        'Cardiología',
+        'Dermatología',
+        'Urgencias',
+        'Endocrinología',
+        'Etología',
+        'Gastroenterología',
+        'Hospitalización',
+        'Cuidados críticos o intensivos',
+        'Cirugía laser',
+        'Nefrología',
+        'Neurología',
+        'Nutrición',
+        'Reproducción u obstetricia',
+        'Odontología',
+        'Oncología',
+        'Oftalmología',
+        'Ortopedia',
+        'Fisioterapia',
+        'Neumología',
+        'Consulta preanestésica',
+        'Consulta prequirúrgica',
+        'Psicología',
+        'Cirugía tejidos blandos',
+        'Esterilización',
+        'Medicina felina',
+        'Internista',
+        'Vacunación',
+        'Desparasitación',
+        'Cirugía',
+        'Examen de laboratorio',
+        'Imágenes diagnósticas',
+        'Laboratorio clínico',
+        'Resonancia magnética',
+        'Tomografía',
+        'Ecografía',
+        'Radiografía (Rayos X)',
+        'Peluquería o Spa',
+        'Otro',
+    ];
 
     // Cargar consultas
     const loadConsultations = React.useCallback(async () => {
@@ -108,6 +161,7 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
             description: '',
             pet_id: petId,
         });
+        setCustomReason('');
         setFormErrors({});
         setOpenModal(true);
     };
@@ -115,11 +169,14 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
     // Abrir modal para editar
     const handleEdit = (consultation: Consultation) => {
         setEditingConsultation(consultation);
+        const reason = consultation.reason || '';
+        const isCustomReason = reason && !reasonOptions.includes(reason);
         setFormData({
-            reason: consultation.reason || '',
+            reason: isCustomReason ? 'Otro' : reason,
             description: consultation.description || '',
             pet_id: consultation.pet_id,
         });
+        setCustomReason(isCustomReason ? reason : '');
         setFormErrors({});
         setOpenModal(true);
     };
@@ -133,6 +190,7 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
             description: '',
             pet_id: petId,
         });
+        setCustomReason('');
         setFormErrors({});
     };
 
@@ -148,7 +206,7 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
             const method = editingConsultation ? 'PUT' : 'POST';
 
             const dataToSend = {
-                reason: formData.reason,
+                reason: formData.reason === 'Otro' ? customReason : formData.reason,
                 description: formData.description,
                 pet_id: formData.pet_id,
             };
@@ -306,18 +364,40 @@ export default function ConsultationList({ petId, onUpdateCount }: ConsultationL
                             {formErrors.general}
                         </Alert>
                     )}
-                    <TextField
-                        label="Motivo"
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        value={formData.reason}
-                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                        error={!!formErrors.reason}
-                        helperText={formErrors.reason}
-                        placeholder="Ingrese el motivo de la consulta..."
-                        sx={{ mb: 2 }}
-                    />
+                    <FormControl fullWidth size="small" error={!!formErrors.reason} sx={{ mb: 2 }}>
+                        <InputLabel>Motivo</InputLabel>
+                        <Select
+                            value={formData.reason}
+                            label="Motivo"
+                            onChange={(e) => {
+                                setFormData({ ...formData, reason: e.target.value });
+                                if (e.target.value !== 'Otro') {
+                                    setCustomReason('');
+                                }
+                            }}
+                        >
+                            {reasonOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        {formErrors.reason && <FormHelperText>{formErrors.reason}</FormHelperText>}
+                    </FormControl>
+                    {formData.reason === 'Otro' && (
+                        <TextField
+                            label="Especifique el motivo"
+                            fullWidth
+                            variant="outlined"
+                            size="small"
+                            value={customReason}
+                            onChange={(e) => setCustomReason(e.target.value)}
+                            error={!!formErrors.reason}
+                            helperText={formErrors.reason || 'Ingrese el motivo de la consulta...'}
+                            placeholder="Ingrese el motivo de la consulta..."
+                            sx={{ mb: 2 }}
+                        />
+                    )}
                     <TextField
                         label="Descripción"
                         fullWidth
