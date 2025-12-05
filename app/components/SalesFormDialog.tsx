@@ -64,7 +64,10 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
     const [loadingProducts, setLoadingProducts] = React.useState(false);
     const [loadingClients, setLoadingClients] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchInput, setSearchInput] = React.useState('');
     const [cart, setCart] = React.useState<CartItem[]>([]);
+    const [productsPage, setProductsPage] = React.useState(1);
+    const [productsTotalPages, setProductsTotalPages] = React.useState(1);
     const [formData, setFormData] = React.useState({
         client_id: '',
         discount: '0',
@@ -73,41 +76,6 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
     const [submitting, setSubmitting] = React.useState(false);
     const [showConfirmModal, setShowConfirmModal] = React.useState(false);
 
-    // Cargar productos
-    const loadProducts = React.useCallback(async () => {
-        try {
-            setLoadingProducts(true);
-            let url = `/api/products?paginate=false&per_page=100`;
-            if (selectedVeterinary?.id) {
-                url += `&veterinary_id=${selectedVeterinary.id}`;
-            }
-            
-            const response = await fetch(url);
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('Respuesta inválida del servidor');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar productos');
-            }
-
-            if (data.data) {
-                setProducts(data.data);
-            } else if (Array.isArray(data)) {
-                setProducts(data);
-            } else {
-                setProducts([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar productos:', err);
-            setProducts([]);
-        } finally {
-            setLoadingProducts(false);
-        }
-    }, [selectedVeterinary?.id]);
 
     // Cargar clientes
     const loadClients = React.useCallback(async () => {
@@ -148,17 +116,15 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
     // Inicializar cuando se abre el modal
     React.useEffect(() => {
         if (open) {
-            loadProducts();
-            loadClients();
             setCart([]);
             setFormData({
                 client_id: '',
                 discount: '0',
             });
-            setSearchTerm('');
             setFormErrors({});
+            loadClients();
         }
-    }, [open, loadProducts, loadClients]);
+    }, [open, loadClients]);
 
     // Agregar producto al carrito
     const handleAddToCart = (product: Product) => {
@@ -308,11 +274,9 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
                     {/* Sección izquierda - Productos */}
                     <Box sx={{ width: '60%', borderRight: 1, borderColor: 'divider', p: 2, overflow: 'auto' }}>
                         <ProductGrid
-                            products={products}
-                            loading={loadingProducts}
-                            searchTerm={searchTerm}
-                            onSearchChange={setSearchTerm}
                             onAddToCart={handleAddToCart}
+                            veterinaryId={selectedVeterinary?.id}
+                            open={open}
                         />
                     </Box>
 

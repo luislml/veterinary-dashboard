@@ -96,6 +96,11 @@ function getNavigation(
         });
     }
 
+    navigation.push({
+        kind: 'header',
+        title: 'Marketplace',
+    });
+
     // Productos - requiere permiso 'view any products'
     if (hasPermission('view any products')) {
         navigation.push({
@@ -105,27 +110,19 @@ function getNavigation(
         });
     }
 
-    // compras y ventas - menu con subitems
-    const purchasesAndSalesChildren = [];
+    // compras y ventas
     if (hasPermission('view any shoppings')) {
-        purchasesAndSalesChildren.push({
+        navigation.push({
             segment: 'shoppings',
             title: 'Compras',
             icon: <AddShoppingCartIcon />,
         });
     }
     if (hasPermission('view any sales')) {
-        purchasesAndSalesChildren.push({
+        navigation.push({
             segment: 'sales',
             title: 'Ventas',
             icon: <ShoppingCartCheckoutIcon />,
-        });
-    }
-    if (purchasesAndSalesChildren.length > 0 && hasRole('veterinary')) {
-        navigation.push({
-            title: 'Compras y ventas',
-            icon: <ShoppingCartIcon />,
-            children: purchasesAndSalesChildren,
         });
     }
 
@@ -168,38 +165,31 @@ function getNavigation(
         });
     }
 
-    // configuraciones - menú con subitems
-    const configurationsChildren = [];
+    navigation.push({
+        kind: 'header',
+        title: 'Configuraciones',
+    });
 
     // configuraciones - menú con subitems
     if (hasPermission('view any configurations')) {
-        configurationsChildren.push({
+        navigation.push({
             segment: 'configurations',
             title: 'Mi veterinaria',
             icon: <PetsIcon />,
         });
     }
     if (hasPermission('view any schedules')) {
-        configurationsChildren.push({
+        navigation.push({
             segment: 'schedules',
             title: 'Horarios',
             icon: <ScheduleIcon />,
         });
     }
     if (hasPermission('view any addresses')) {
-        configurationsChildren.push({
+        navigation.push({
             segment: 'addresses',
             title: 'Direcciones',
             icon: <LocationOnIcon />,
-        });
-    }
-
-    // Solo agregar el menú de Configuraciones si tiene al menos un subitem Y es veterinario
-    if (configurationsChildren.length > 0 && hasRole('veterinary')) {
-        navigation.push({
-            title: 'Configuraciones generales',
-            icon: <SettingsIcon />,
-            children: configurationsChildren,
         });
     }
     

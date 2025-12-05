@@ -291,12 +291,13 @@ function ShoppingsPage() {
                                     <StyledTableCell>
                                         <FormControl size="small" sx={{ minWidth: 120 }}>
                                             <Select
-                                                value={shopping.state || 'paid'}
+                                                value={shopping.state || 'Completado'}
                                                 onChange={(e) => handleStateChange(shopping.id, e.target.value, shopping.state || 'paid')}
                                                 sx={{ fontSize: '0.875rem' }}
+                                                disabled={shopping.state === 'Cancelado'}
                                             >
-                                                <MenuItem value="paid">Paid</MenuItem>
-                                                <MenuItem value="canceled">Canceled</MenuItem>
+                                                <MenuItem value="Completado">Completado</MenuItem>
+                                                <MenuItem value="Cancelado">Cancelado</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </StyledTableCell>
@@ -375,13 +376,13 @@ function ShoppingsPage() {
                         </Typography>
                         <Typography variant="body2">
                             El cambio de estado de la compra afectará el stock de los productos. 
-                            {shoppingToUpdate?.newState === 'canceled' 
+                            {shoppingToUpdate?.newState === 'Cancelado' 
                                 ? ' Al cancelar la compra, el stock de los productos se decrementará.'
-                                : ' Al marcar como pagada, el stock de los productos se incrementará.'}
+                                : ' Al marcar como completado, el stock de los productos se incrementará.'}
                         </Typography>
                     </Alert>
                     <Typography variant="body2" color="text.secondary">
-                        ¿Está seguro de que desea cambiar el estado de la compra a <strong>{shoppingToUpdate?.newState === 'paid' ? 'Paid' : 'Canceled'}</strong>?
+                        ¿Está seguro de que desea cambiar el estado de la compra a <strong>{shoppingToUpdate?.newState === 'Completado' ? 'Completado' : 'Cancelado'}</strong>?
                     </Typography>
                 </DialogContent>
                 <DialogActions>

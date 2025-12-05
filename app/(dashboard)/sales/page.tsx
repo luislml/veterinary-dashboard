@@ -303,6 +303,7 @@ function SalesPage() {
                                                 value={sale.state || 'Completado'}
                                                 onChange={(e) => handleStateChange(sale.id, e.target.value, sale.state || 'paid')}
                                                 sx={{ fontSize: '0.875rem' }}
+                                                disabled={sale.state === 'Cancelado'}
                                             >
                                                 <MenuItem value="Completado">Completado</MenuItem>
                                                 <MenuItem value="Cancelado">Cancelado</MenuItem>

@@ -530,7 +530,7 @@ function SchedulesPage() {
                             Horario
                         </Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            <Grid size={{xs: 6, md: 6}}>
                                 <TextField
                                     label="Hora de inicio"
                                     type="time"
@@ -548,7 +548,7 @@ function SchedulesPage() {
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={{xs: 6, md: 6}}>
                                 <TextField
                                     label="Hora de fin"
                                     type="time"
