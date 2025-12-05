@@ -17,6 +17,7 @@ import {
     CircularProgress,
     Pagination,
     Tooltip,
+    Avatar,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -27,6 +28,7 @@ import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
+import { API_CONFIG } from '../../../lib/config';
 import ProductFormDialog, { Product as ProductType } from '../../components/ProductFormDialog';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -208,6 +210,7 @@ function ProductsPage() {
                     <TableHead>
                         <TableRow>
                             <StyledTableCell>ID</StyledTableCell>
+                            <StyledTableCell>Foto</StyledTableCell>
                             <StyledTableCell>Nombre</StyledTableCell>
                             <StyledTableCell>Código</StyledTableCell>
                             <StyledTableCell>Precio</StyledTableCell>
@@ -232,45 +235,60 @@ function ProductsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            products.map((product) => (
-                                <StyledTableRow key={product.id}>
-                                    <StyledTableCell>{product.id}</StyledTableCell>
-                                    <StyledTableCell>{product.name}</StyledTableCell>
-                                    <StyledTableCell>{product.code || '-'}</StyledTableCell>
-                                    <StyledTableCell>
-                                        {product.price !== undefined && product.price !== null
-                                            ? `bs/${product.price}`
-                                            : '-'}
-                                    </StyledTableCell>
-                                    <StyledTableCell>{product.stock !== undefined && product.stock !== null ? product.stock : '-'}</StyledTableCell>
-                                    <StyledTableCell>
-                                        {product.veterinaries && product.veterinaries.length > 0
-                                            ? product.veterinaries.map(v => v.name).join(', ')
-                                            : product.veterinary?.name || (Array.isArray(product.veterinary_id) 
-                                                ? product.veterinary_id.join(', ') 
-                                                : `Veterinaria ID: ${product.veterinary_id || '-'}`)}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
-                                        <Tooltip title="Editar" placement="top">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleEdit(product)}
+                            products.map((product) => {
+                                const imageUrl = product.images && product.images.length > 0 
+                                    ? `${API_CONFIG.baseURL.replace('/api', '')}/${(product.images as any)[product.images.length - 1].url}`
+                                    : undefined;
+                                
+                                return (
+                                    <StyledTableRow key={product.id}>
+                                        <StyledTableCell>{product.id}</StyledTableCell>
+                                        <StyledTableCell>
+                                            <Avatar
+                                                src={imageUrl}
+                                                sx={{ width: 50, height: 50 }}
+                                                variant="square"
                                             >
-                                                <EditIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Eliminar" placement="top">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleDelete(product.id)}
-                                                color="error"
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                            ))
+                                                {product.name[0]}
+                                            </Avatar>
+                                        </StyledTableCell>
+                                        <StyledTableCell>{product.name}</StyledTableCell>
+                                        <StyledTableCell>{product.code || '-'}</StyledTableCell>
+                                        <StyledTableCell>
+                                            {product.price !== undefined && product.price !== null
+                                                ? `bs/${product.price}`
+                                                : '-'}
+                                        </StyledTableCell>
+                                        <StyledTableCell>{product.stock !== undefined && product.stock !== null ? product.stock : '-'}</StyledTableCell>
+                                        <StyledTableCell>
+                                            {product.veterinaries && product.veterinaries.length > 0
+                                                ? product.veterinaries.map(v => v.name).join(', ')
+                                                : product.veterinary?.name || (Array.isArray(product.veterinary_id) 
+                                                    ? product.veterinary_id.join(', ') 
+                                                    : `Veterinaria ID: ${product.veterinary_id || '-'}`)}
+                                        </StyledTableCell>
+                                        <StyledTableCell align="right">
+                                            <Tooltip title="Editar" placement="top">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleEdit(product)}
+                                                >
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Eliminar" placement="top">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => handleDelete(product.id)}
+                                                    color="error"
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </StyledTableCell>
+                                    </StyledTableRow>
+                                );
+                            })
                         )}
                     </TableBody>
                 </Table>

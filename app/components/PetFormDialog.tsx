@@ -22,6 +22,7 @@ import { useSnackbar } from 'notistack';
 import { useSelectedVeterinary } from '../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../lib/hooks/useSessionWithPermissions';
 import { API_CONFIG } from '../../lib/config';
+import { calculateBirthday, calculateAgeFromBirthday } from '../../utils/pet-date-utils';
 import PetsIcon from '@mui/icons-material/Pets';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,7 +34,7 @@ export interface Pet {
     client_id: number;
     color: string;
     gender: string;
-    age: string | number;
+    birthday?: string;
     image?: string;
     images?: object[] | null;
     race?: {
@@ -96,7 +97,8 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
         client_id: '', 
         color: '', 
         gender: '', 
-        age: '' 
+        ageValue: '',
+        ageUnit: 'years' as 'years' | 'months'
     });
     const [imageFile, setImageFile] = React.useState<File | null>(null);
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
@@ -287,6 +289,17 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                                          petData.race?.type_pet_id?.toString() || 
                                          '';
                         
+                        // Calcular edad desde birthday si existe
+                        let ageValue = '';
+                        let ageUnit: 'years' | 'months' = 'years';
+                        if (petData.birthday) {
+                            const ageData = calculateAgeFromBirthday(petData.birthday);
+                            if (ageData) {
+                                ageValue = ageData.value.toString();
+                                ageUnit = ageData.unit;
+                            }
+                        }
+                        
                         if (typePetId) {
                             // Cargar las razas filtradas por el tipo de mascota
                             await loadRaces(typePetId);
@@ -298,7 +311,8 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                                 client_id: petData.client_id?.toString() || '', 
                                 color: petData.color || '', 
                                 gender: petData.gender || '', 
-                                age: String(petData.age || '') 
+                                ageValue,
+                                ageUnit
                             });
                         } else {
                             setFormData({ 
@@ -308,12 +322,23 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                                 client_id: petData.client_id?.toString() || '', 
                                 color: petData.color || '', 
                                 gender: petData.gender || '', 
-                                age: String(petData.age || '') 
+                                ageValue,
+                                ageUnit
                             });
                             setRaces([]);
                         }
                     } catch (err) {
                         console.error('Error al cargar raza:', err);
+                        // Calcular edad desde birthday si existe
+                        let ageValue = '';
+                        let ageUnit: 'years' | 'months' = 'years';
+                        if (petData.birthday) {
+                            const ageData = calculateAgeFromBirthday(petData.birthday);
+                            if (ageData) {
+                                ageValue = ageData.value.toString();
+                                ageUnit = ageData.unit;
+                            }
+                        }
                         setFormData({ 
                             name: petData.name || '', 
                             type_pet_id: '',
@@ -321,7 +346,8 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                             client_id: petData.client_id?.toString() || '', 
                             color: petData.color || '', 
                             gender: petData.gender || '', 
-                            age: String(petData.age || '') 
+                            ageValue,
+                            ageUnit
                         });
                         setRaces([]);
                     }
@@ -338,7 +364,8 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                     client_id: defaultClientIdValue, 
                     color: '', 
                     gender: '', 
-                    age: '' 
+                    ageValue: '',
+                    ageUnit: 'years'
                 });
                 setFormErrors({});
                 setRaces([]);
@@ -401,6 +428,14 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
         setSubmitting(true);
 
         try {
+            // Calcular birthday desde edad y unidad
+            const birthday = calculateBirthday(formData.ageValue, formData.ageUnit);
+            if (!birthday && formData.ageValue) {
+                setFormErrors({ birthday: 'Por favor ingrese una edad válida' });
+                setSubmitting(false);
+                return;
+            }
+
             const url = pet ? `/api/pets/${pet.id}` : '/api/pets';
             const method = pet ? 'PUT' : 'POST';
 
@@ -412,7 +447,9 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                 formDataToSend.append('client_id', formData.client_id);
                 formDataToSend.append('color', formData.color);
                 formDataToSend.append('gender', formData.gender);
-                formDataToSend.append('age', formData.age);
+                if (birthday) {
+                    formDataToSend.append('birthday', birthday);
+                }
                 formDataToSend.append('image', imageFile);
                 // Agregar _method PATCH para updates
                 if (pet) {
@@ -447,8 +484,10 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                     client_id: parseInt(formData.client_id),
                     color: formData.color,
                     gender: formData.gender,
-                    age: formData.age,
                 };
+                if (birthday) {
+                    dataToSend.birthday = birthday;
+                }
                 // Agregar _method PATCH para updates
                 if (pet) {
                     dataToSend._method = 'PATCH';
@@ -660,19 +699,34 @@ export default function PetFormDialog({ open, onClose, pet, defaultClientId, onS
                     </Select>
                     {formErrors.gender && <FormHelperText>{formErrors.gender}</FormHelperText>}
                 </FormControl>
-                <TextField
-                    label="Edad"
-                    type="text"
-                    fullWidth
-                    variant="outlined"
-                    size="small"
-                    value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    error={!!formErrors.age}
-                    helperText={formErrors.age || 'Ejemplo: 2 años, 3 meses'}
-                    placeholder="Ejemplo: 2 años, 3 meses"
-                    sx={{ mb: 2 }}
-                />
+                <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+                    <TextField
+                        label="Edad"
+                        type="number"
+                        variant="outlined"
+                        size="small"
+                        value={formData.ageValue}
+                        onChange={(e) => setFormData({ ...formData, ageValue: e.target.value })}
+                        error={!!formErrors.ageValue || !!formErrors.birthday}
+                        helperText={formErrors.ageValue || formErrors.birthday}
+                        inputProps={{ min: 0, step: 0.1 }}
+                        sx={{ flex: 1 }}
+                    />
+                    <FormControl size="small" error={!!formErrors.ageUnit || !!formErrors.birthday} sx={{ minWidth: 120 }}>
+                        <InputLabel>Unidad</InputLabel>
+                        <Select
+                            value={formData.ageUnit}
+                            label="Unidad"
+                            onChange={(e) => setFormData({ ...formData, ageUnit: e.target.value as 'years' | 'months' })}
+                        >
+                            <MenuItem value="years">Años</MenuItem>
+                            <MenuItem value="months">Meses</MenuItem>
+                        </Select>
+                        {(formErrors.ageUnit || formErrors.birthday) && (
+                            <FormHelperText>{formErrors.ageUnit || formErrors.birthday}</FormHelperText>
+                        )}
+                    </FormControl>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} disabled={submitting} color="error">

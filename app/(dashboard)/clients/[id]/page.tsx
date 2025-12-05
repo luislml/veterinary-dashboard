@@ -37,6 +37,7 @@ import ContactEmergencyIcon from '@mui/icons-material/ContactEmergency';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../../../lib/config';
+import { formatAgeFromBirthday } from '../../../../utils/pet-date-utils';
 import PetFormDialog from '../../../components/PetFormDialog';
 import ClientFormDialog from '../../../components/ClientFormDialog';
 
@@ -63,7 +64,7 @@ interface Pet {
     client_id: number;
     color: string;
     gender: string;
-    age: string | number;
+    birthday?: string;
     images?: object[] | null;
     race?: {
         id: number;
@@ -330,6 +331,7 @@ export default function ClientDetailPage() {
                                                             <Avatar
                                                                 src={imageUrl || undefined}
                                                                 sx={{ width: 50, height: 50 }}
+                                                                variant="square"
                                                             >
                                                                 {pet.name[0]}
                                                             </Avatar>
@@ -341,7 +343,7 @@ export default function ClientDetailPage() {
                                                         <TableCell>
                                                             {GENDER_OPTIONS[pet.gender] || pet.gender}
                                                         </TableCell>
-                                                        <TableCell>{pet.age || '-'}</TableCell>
+                                                        <TableCell>{formatAgeFromBirthday(pet.birthday) || '-'}</TableCell>
                                                         <TableCell align="right">
                                                             <Tooltip title="Ver detalles" placement="top">
                                                                 <IconButton

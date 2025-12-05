@@ -44,6 +44,7 @@ export default function SignIn() {
                 { id: 'credentials', name: 'Credentials' },
                 formData
             );
+            console.log('result', result);
 
             if (result?.error) {
                 // Parsear errores por campo

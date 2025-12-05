@@ -357,10 +357,10 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
                                                 primary={item.product.name}
                                                 secondary={
                                                     <>
-                                                        <Typography variant="caption" display="block">
+                                                        <Typography variant="caption" component="span" display="block">
                                                             bs/{Number(item.price_unit).toFixed(2)} x {item.quantity}
                                                         </Typography>
-                                                        <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 0.5 }}>
+                                                        <Typography variant="body2" component="span" sx={{ fontWeight: 'bold', mt: 0.5, display: 'block' }}>
                                                             bs/{(Number(item.price_unit) * item.quantity).toFixed(2)}
                                                         </Typography>
                                                     </>
@@ -470,10 +470,10 @@ export default function SalesFormDialog({ open, onClose, onSave }: SalesFormDial
                                     primary={item.product.name}
                                     secondary={
                                         <>
-                                            <Typography variant="caption" display="block">
+                                            <Typography variant="caption" component="span" display="block">
                                                 Cantidad: {item.quantity} x bs/{Number(item.price_unit).toFixed(2)}
                                             </Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 0.5 }}>
+                                            <Typography variant="body2" component="span" sx={{ fontWeight: 'bold', mt: 0.5, display: 'block' }}>
                                                 Subtotal: bs/{(Number(item.price_unit) * item.quantity).toFixed(2)}
                                             </Typography>
                                         </>

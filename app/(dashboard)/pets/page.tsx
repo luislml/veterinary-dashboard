@@ -28,6 +28,7 @@ import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import { API_CONFIG } from '../../../lib/config';
+import { formatAgeFromBirthday } from '../../../utils/pet-date-utils';
 import PetFormDialog, { Pet as PetType } from '../../components/PetFormDialog';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -265,7 +266,7 @@ function PetsPage() {
                                     <StyledTableCell>
                                         {GENDER_OPTIONS.find(g => g.value === pet.gender)?.label || pet.gender}
                                     </StyledTableCell>
-                                    <StyledTableCell>{pet.age || '-'}</StyledTableCell>
+                                    <StyledTableCell>{formatAgeFromBirthday(pet.birthday) || '-'}</StyledTableCell>
                                     <StyledTableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton

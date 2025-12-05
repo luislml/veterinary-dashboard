@@ -4,6 +4,11 @@
 
 import { API_CONFIG } from './config';
 
+// En desarrollo, ignorar errores de certificado SSL (solo para desarrollo local)
+if (process.env.NODE_ENV !== 'production' && typeof process !== 'undefined') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 export interface LoginResponse {
     user?: {
         id: string | number;

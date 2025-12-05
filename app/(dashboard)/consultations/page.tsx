@@ -269,7 +269,7 @@ function ClientsPage() {
                                     <StyledTableCell>
                                         <ListItem sx={{ padding: 0 }}>
                                             <ListItemAvatar>
-                                            <Avatar {...stringAvatar(client.name)}/>
+                                            <Avatar variant="square" {...stringAvatar(client.name)}/>
                                             </ListItemAvatar>
                                             <ListItemText primary={client.name + ' ' + (client.last_name || '-')} />
                                         </ListItem>

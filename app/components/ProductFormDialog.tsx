@@ -35,6 +35,7 @@ export interface Product {
     stock: number;
     code: string;
     image?: string;
+    images?: object[] | null;
     veterinary_id?: number | number[];
     veterinaries?: {
         id: number;
@@ -260,8 +261,8 @@ export default function ProductFormDialog({ open, onClose, product, onSave }: Pr
             if (imageFile) {
                 const formDataToSend = new FormData();
                 formDataToSend.append('name', formData.name);
-                formDataToSend.append('price', formData.price.toString());
-                formDataToSend.append('stock', formData.stock.toString());
+                formDataToSend.append('price', formData.price);
+                formDataToSend.append('stock', formData.stock);
                 formDataToSend.append('code', formData.code);
                 // Agregar cada veterinary_id como array
                 veterinaryId.forEach((id) => {

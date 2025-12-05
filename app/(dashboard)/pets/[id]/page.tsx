@@ -26,6 +26,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { useRouter, useParams } from 'next/navigation';
 import { API_CONFIG } from '../../../../lib/config';
+import { formatAgeFromBirthday } from '../../../../utils/pet-date-utils';
 import PetFormDialog from '../../../components/PetFormDialog';
 import ConsultationList from '../../../components/ConsultationList';
 import VaccineList from '../../../components/VaccineList';
@@ -38,7 +39,7 @@ interface Pet {
     client_id: number;
     color: string;
     gender: string;
-    age: string | number;
+    birthday?: string;
     images?: object[] | null;
     race?: {
         id: number;
@@ -272,14 +273,14 @@ function PetDetailPage() {
                                     </Typography>
                                 </Box>
 
-                                {pet.age && (
+                                {pet.birthday && formatAgeFromBirthday(pet.birthday) && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <DateRangeIcon color="action" />
                                         <Typography variant="body2" color="text.secondary">
                                             Edad:
                                         </Typography>
                                         <Typography variant="body1" sx={{ ml: 1 }}>
-                                            {pet.age}
+                                            {formatAgeFromBirthday(pet.birthday)}
                                         </Typography>
                                     </Box>
                                 )}
