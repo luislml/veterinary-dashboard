@@ -32,28 +32,8 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Race {
     id: number;
@@ -301,10 +281,10 @@ function RacesPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Tipo de Mascota</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Tipo de Mascota</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -324,13 +304,13 @@ function RacesPage() {
                             </TableRow>
                         ) : (
                             races.map((race) => (
-                                <StyledTableRow key={race.id}>
-                                    <StyledTableCell>{race.id}</StyledTableCell>
-                                    <StyledTableCell>{race.name}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={race.id}>
+                                    <TableCell>{race.id}</TableCell>
+                                    <TableCell>{race.name}</TableCell>
+                                    <TableCell>
                                         {race.type_pet?.name || `Tipo ID: ${race.type_pet_id}`}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -348,8 +328,8 @@ function RacesPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

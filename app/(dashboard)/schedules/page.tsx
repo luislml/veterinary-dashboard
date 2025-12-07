@@ -33,30 +33,10 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Schedule {
     id: number;
@@ -397,11 +377,11 @@ function SchedulesPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Día</StyledTableCell>
-                            <StyledTableCell>Horario</StyledTableCell>
-                            {isAdmin && <StyledTableCell>Veterinaria</StyledTableCell>}
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Día</TableCell>
+                            <TableCell>Horario</TableCell>
+                            {isAdmin && <TableCell>Veterinaria</TableCell>}
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -421,18 +401,18 @@ function SchedulesPage() {
                             </TableRow>
                         ) : (
                             schedules.map((schedule) => (
-                                <StyledTableRow key={schedule.id}>
-                                    <StyledTableCell>{schedule.id}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={schedule.id}>
+                                    <TableCell>{schedule.id}</TableCell>
+                                    <TableCell>
                                         {DAYS_OPTIONS.find(d => d.value === schedule.days)?.label || schedule.days}
-                                    </StyledTableCell>
-                                    <StyledTableCell>{schedule.schedule || '-'}</StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>{schedule.schedule || '-'}</TableCell>
                                     {isAdmin && (
-                                        <StyledTableCell>
+                                        <TableCell>
                                             {schedule.veterinary?.name || `ID: ${schedule.veterinary_id}`}
-                                        </StyledTableCell>
+                                        </TableCell>
                                     )}
-                                    <StyledTableCell align="right">
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -450,8 +430,8 @@ function SchedulesPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

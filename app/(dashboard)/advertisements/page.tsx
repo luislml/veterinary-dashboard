@@ -22,30 +22,11 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import AdvertisementFormDialog from '../../components/AdvertisementFormDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Pet {
     id: number;
@@ -217,12 +198,12 @@ function AdvertisementsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Mascota</StyledTableCell>
-                            <StyledTableCell>Descripción</StyledTableCell>
-                            <StyledTableCell>Fecha</StyledTableCell>
-                            <StyledTableCell>Fecha de Creación</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Mascota</TableCell>
+                            <TableCell>Descripción</TableCell>
+                            <TableCell>Fecha</TableCell>
+                            <TableCell>Fecha de Creación</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -242,15 +223,15 @@ function AdvertisementsPage() {
                             </TableRow>
                         ) : (
                             advertisements.map((advertisement) => (
-                                <StyledTableRow key={advertisement.id}>
-                                    <StyledTableCell>{advertisement.id}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={advertisement.id}>
+                                    <TableCell>{advertisement.id}</TableCell>
+                                    <TableCell>
                                         {advertisement.pet 
                                             ? `${advertisement.pet.name}${advertisement.pet.race ? ` - ${advertisement.pet.race.name}` : ''}`
                                             : `Mascota ID: ${advertisement.id_pets}`
                                         }
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         <Typography 
                                             variant="body2" 
                                             sx={{ 
@@ -262,20 +243,20 @@ function AdvertisementsPage() {
                                         >
                                             {advertisement.description}
                                         </Typography>
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {advertisement.date 
                                             ? new Date(advertisement.date).toLocaleDateString()
                                             : '-'
                                         }
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {advertisement.created_at 
                                             ? new Date(advertisement.created_at).toLocaleDateString()
                                             : '-'
                                         }
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -293,8 +274,8 @@ function AdvertisementsPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

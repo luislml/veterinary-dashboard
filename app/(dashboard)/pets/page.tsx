@@ -22,7 +22,6 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
@@ -30,25 +29,6 @@ import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPerm
 import { API_CONFIG } from '../../../lib/config';
 import { formatAgeFromBirthday } from '../../../utils/pet-date-utils';
 import PetFormDialog, { Pet as PetType } from '../../components/PetFormDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Pet extends PetType {
     client?: {
@@ -226,14 +206,14 @@ function PetsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Raza</StyledTableCell>
-                            <StyledTableCell>Cliente</StyledTableCell>
-                            <StyledTableCell>Color</StyledTableCell>
-                            <StyledTableCell>Género</StyledTableCell>
-                            <StyledTableCell>Edad</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Raza</TableCell>
+                            <TableCell>Cliente</TableCell>
+                            <TableCell>Color</TableCell>
+                            <TableCell>Género</TableCell>
+                            <TableCell>Edad</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -253,21 +233,21 @@ function PetsPage() {
                             </TableRow>
                         ) : (
                             pets.map((pet) => (
-                                <StyledTableRow key={pet.id}>
-                                    <StyledTableCell>{pet.id}</StyledTableCell>
-                                    <StyledTableCell>{pet.name}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={pet.id}>
+                                    <TableCell>{pet.id}</TableCell>
+                                    <TableCell>{pet.name}</TableCell>
+                                    <TableCell>
                                         {pet.race?.name || `Raza ID: ${pet.race_id}`}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {pet.client ? `${pet.client.name} ${pet.client.last_name || ''}`.trim() : `Cliente ID: ${pet.client_id}`}
-                                    </StyledTableCell>
-                                    <StyledTableCell>{pet.color || '-'}</StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>{pet.color || '-'}</TableCell>
+                                    <TableCell>
                                         {GENDER_OPTIONS.find(g => g.value === pet.gender)?.label || pet.gender}
-                                    </StyledTableCell>
-                                    <StyledTableCell>{formatAgeFromBirthday(pet.birthday) || '-'}</StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell>{formatAgeFromBirthday(pet.birthday) || '-'}</TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -285,8 +265,8 @@ function PetsPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

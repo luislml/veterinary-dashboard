@@ -22,31 +22,11 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import ClientFormDialog, { Client as ClientType } from '../../components/ClientFormDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Client extends ClientType {}
 
@@ -210,14 +190,14 @@ function ClientsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Apellido</StyledTableCell>
-                            <StyledTableCell>CI</StyledTableCell>
-                            <StyledTableCell>Teléfono</StyledTableCell>
-                            <StyledTableCell>Dirección</StyledTableCell>
-                            <StyledTableCell>Veterinaria</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Apellido</TableCell>
+                            <TableCell>CI</TableCell>
+                            <TableCell>Teléfono</TableCell>
+                            <TableCell>Dirección</TableCell>
+                            <TableCell>Veterinaria</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -237,21 +217,21 @@ function ClientsPage() {
                             </TableRow>
                         ) : (
                             clients.map((client) => (
-                                <StyledTableRow key={client.id}>
-                                    <StyledTableCell>{client.id}</StyledTableCell>
-                                    <StyledTableCell>{client.name}</StyledTableCell>
-                                    <StyledTableCell>{client.last_name || '-'}</StyledTableCell>
-                                    <StyledTableCell>{client.ci || '-'}</StyledTableCell>
-                                    <StyledTableCell>{client.phone || '-'}</StyledTableCell>
-                                    <StyledTableCell>{client.address || '-'}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={client.id}>
+                                    <TableCell>{client.id}</TableCell>
+                                    <TableCell>{client.name}</TableCell>
+                                    <TableCell>{client.last_name || '-'}</TableCell>
+                                    <TableCell>{client.ci || '-'}</TableCell>
+                                    <TableCell>{client.phone || '-'}</TableCell>
+                                    <TableCell>{client.address || '-'}</TableCell>
+                                    <TableCell>
                                         {client.veterinaries && client.veterinaries.length > 0
                                             ? client.veterinaries.map(v => v.name).join(', ')
                                             : client.veterinary?.name || (Array.isArray(client.veterinary_id) 
                                                 ? client.veterinary_id.join(', ') 
                                                 : `Veterinaria ID: ${client.veterinary_id || '-'}`)}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -269,8 +249,8 @@ function ClientsPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

@@ -32,30 +32,10 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Configuration {
     id: number;
@@ -349,10 +329,10 @@ function ConfigurationsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Estilo</StyledTableCell>
-                            {isAdmin && <StyledTableCell>Veterinaria</StyledTableCell>}
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Estilo</TableCell>
+                            {isAdmin && <TableCell>Veterinaria</TableCell>}
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -372,9 +352,9 @@ function ConfigurationsPage() {
                             </TableRow>
                         ) : (
                             configurations.map((configuration) => (
-                                <StyledTableRow key={configuration.id}>
-                                    <StyledTableCell>{configuration.id}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={configuration.id}>
+                                    <TableCell>{configuration.id}</TableCell>
+                                    <TableCell>
                                         <Typography 
                                             variant="body2" 
                                             sx={{ 
@@ -386,13 +366,13 @@ function ConfigurationsPage() {
                                         >
                                             {configuration.style || '-'}
                                         </Typography>
-                                    </StyledTableCell>
+                                    </TableCell>
                                     {isAdmin && (
-                                        <StyledTableCell>
+                                        <TableCell>
                                             {configuration.veterinary?.name || `ID: ${configuration.veterinary_id}`}
-                                        </StyledTableCell>
+                                        </TableCell>
                                     )}
-                                    <StyledTableCell align="right">
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -410,8 +390,8 @@ function ConfigurationsPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

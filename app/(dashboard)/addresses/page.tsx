@@ -33,30 +33,10 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Address {
     id: number;
@@ -372,11 +352,11 @@ function AddressesPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Dirección</StyledTableCell>
-                            <StyledTableCell>Tipo</StyledTableCell>
-                            {isAdmin && <StyledTableCell>Veterinaria</StyledTableCell>}
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Dirección</TableCell>
+                            <TableCell>Tipo</TableCell>
+                            {isAdmin && <TableCell>Veterinaria</TableCell>}
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -396,9 +376,9 @@ function AddressesPage() {
                             </TableRow>
                         ) : (
                             addresses.map((address) => (
-                                <StyledTableRow key={address.id}>
-                                    <StyledTableCell>{address.id}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={address.id}>
+                                    <TableCell>{address.id}</TableCell>
+                                    <TableCell>
                                         <Typography 
                                             variant="body2" 
                                             sx={{ 
@@ -410,20 +390,20 @@ function AddressesPage() {
                                         >
                                             {address.address || '-'}
                                         </Typography>
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         <Chip 
                                             label={ADDRESS_TYPE_LABELS[address.address_type] || address.address_type} 
                                             size="small" 
                                             color={ADDRESS_TYPE_COLORS[address.address_type] || 'default'}
                                         />
-                                    </StyledTableCell>
+                                    </TableCell>
                                     {isAdmin && (
-                                        <StyledTableCell>
+                                        <TableCell>
                                             {address.veterinary?.name || `ID: ${address.veterinary_id}`}
-                                        </StyledTableCell>
+                                        </TableCell>
                                     )}
-                                    <StyledTableCell align="right">
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -441,8 +421,8 @@ function AddressesPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

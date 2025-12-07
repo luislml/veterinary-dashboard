@@ -32,28 +32,8 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface User {
     id: number;
@@ -288,13 +268,13 @@ function UsersPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Apellido</StyledTableCell>
-                            <StyledTableCell>Teléfono</StyledTableCell>
-                            <StyledTableCell>Email</StyledTableCell>
-                            <StyledTableCell>Rol</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Apellido</TableCell>
+                            <TableCell>Teléfono</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Rol</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -314,16 +294,16 @@ function UsersPage() {
                             </TableRow>
                         ) : (
                             users.map((user) => (
-                                <StyledTableRow key={user.id}>
-                                    <StyledTableCell>{user.id}</StyledTableCell>
-                                    <StyledTableCell>{user.name}</StyledTableCell>
-                                    <StyledTableCell>{user.last_name || '-'}</StyledTableCell>
-                                    <StyledTableCell>{user.phone || '-'}</StyledTableCell>
-                                    <StyledTableCell>{user.email}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={user.id}>
+                                    <TableCell>{user.id}</TableCell>
+                                    <TableCell>{user.name}</TableCell>
+                                    <TableCell>{user.last_name || '-'}</TableCell>
+                                    <TableCell>{user.phone || '-'}</TableCell>
+                                    <TableCell>{user.email}</TableCell>
+                                    <TableCell>
                                         {ROLE_OPTIONS.find(r => r.value === user.roles[0])?.label || user.roles[0]}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Editar" placement="top">
                                             <IconButton
                                                 size="small"
@@ -341,8 +321,8 @@ function UsersPage() {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

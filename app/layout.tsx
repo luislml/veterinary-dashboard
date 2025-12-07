@@ -167,7 +167,7 @@ function getNavigation(
     // libro de compras y ventas
     if (hasPermission('view any movements')) {
         navigation.push({
-            segment: 'movements',
+            segment: 'movements-analytics',
             title: 'Libro de compras y ventas',
             icon: <BookIcon />,
         });

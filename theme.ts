@@ -37,6 +37,20 @@ const theme = createTheme({
                 },
             },
         },
+        MuiTableContainer: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '8px',
+                },
+            },
+        },
+        // MuiTableHead: {
+        //     styleOverrides: {
+        //         root: {
+        //             backgroundColor: 'primary.main',
+        //         },
+        //     },
+        // },
     },
 });
 

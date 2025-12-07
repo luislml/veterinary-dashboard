@@ -33,32 +33,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import PetsIcon from '@mui/icons-material/Pets';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import { useRouter } from 'next/navigation';
 import ClientFormDialog, { Client as ClientType } from '../../components/ClientFormDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Client extends ClientType {
     pets?: {
@@ -241,11 +221,11 @@ function ClientsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>Propietario</StyledTableCell>
-                            <StyledTableCell>Teléfono</StyledTableCell>
-                            <StyledTableCell>CI</StyledTableCell>
-                            <StyledTableCell>Mascotas</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>Propietario</TableCell>
+                            <TableCell>Teléfono</TableCell>
+                            <TableCell>CI</TableCell>
+                            <TableCell>Mascotas</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -265,18 +245,18 @@ function ClientsPage() {
                             </TableRow>
                         ) : (
                             clients.map((client) => (
-                                <StyledTableRow key={client.id}>
-                                    <StyledTableCell>
+                                <TableRow key={client.id}>
+                                    <TableCell>
                                         <ListItem sx={{ padding: 0 }}>
                                             <ListItemAvatar>
                                             <Avatar variant="square" {...stringAvatar(client.name)}/>
                                             </ListItemAvatar>
                                             <ListItemText primary={client.name + ' ' + (client.last_name || '-')} />
                                         </ListItem>
-                                    </StyledTableCell>
-                                    <StyledTableCell>{client.phone || '-'}</StyledTableCell>
-                                    <StyledTableCell>{client.ci || '-'}</StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>{client.phone || '-'}</TableCell>
+                                    <TableCell>{client.ci || '-'}</TableCell>
+                                    <TableCell>
                                         <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'transparent' }}>
                                             {client?.pets?.map((pet: any) => (
                                                 <><ListItem key={pet.id} sx={{ padding: 0 }}>
@@ -290,8 +270,8 @@ function ClientsPage() {
                                                 </>
                                             )) || '-'}
                                         </List>
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Ver detalles" placement="top">
                                             <IconButton
                                                 size="small"
@@ -300,8 +280,8 @@ function ClientsPage() {
                                                 <AssignmentIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>

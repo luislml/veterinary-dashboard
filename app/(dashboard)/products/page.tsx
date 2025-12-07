@@ -23,32 +23,12 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import { API_CONFIG } from '../../../lib/config';
 import ProductFormDialog, { Product as ProductType } from '../../components/ProductFormDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Product extends ProductType {}
 
@@ -209,14 +189,14 @@ function ProductsPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Foto</StyledTableCell>
-                            <StyledTableCell>Nombre</StyledTableCell>
-                            <StyledTableCell>Código</StyledTableCell>
-                            <StyledTableCell>Precio</StyledTableCell>
-                            <StyledTableCell>Stock</StyledTableCell>
-                            <StyledTableCell>Veterinarias</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Foto</TableCell>
+                            <TableCell>Nombre</TableCell>
+                            <TableCell>Código</TableCell>
+                            <TableCell>Precio</TableCell>
+                            <TableCell>Stock</TableCell>
+                            <TableCell>Veterinarias</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -241,9 +221,9 @@ function ProductsPage() {
                                     : undefined;
                                 
                                 return (
-                                    <StyledTableRow key={product.id}>
-                                        <StyledTableCell>{product.id}</StyledTableCell>
-                                        <StyledTableCell>
+                                    <TableRow key={product.id}>
+                                        <TableCell>{product.id}</TableCell>
+                                        <TableCell>
                                             <Avatar
                                                 src={imageUrl}
                                                 sx={{ width: 50, height: 50 }}
@@ -251,23 +231,23 @@ function ProductsPage() {
                                             >
                                                 {product.name[0]}
                                             </Avatar>
-                                        </StyledTableCell>
-                                        <StyledTableCell>{product.name}</StyledTableCell>
-                                        <StyledTableCell>{product.code || '-'}</StyledTableCell>
-                                        <StyledTableCell>
+                                        </TableCell>
+                                        <TableCell>{product.name}</TableCell>
+                                        <TableCell>{product.code || '-'}</TableCell>
+                                        <TableCell>
                                             {product.price !== undefined && product.price !== null
                                                 ? `bs/${product.price}`
                                                 : '-'}
-                                        </StyledTableCell>
-                                        <StyledTableCell>{product.stock !== undefined && product.stock !== null ? product.stock : '-'}</StyledTableCell>
-                                        <StyledTableCell>
+                                        </TableCell>
+                                        <TableCell>{product.stock !== undefined && product.stock !== null ? product.stock : '-'}</TableCell>
+                                        <TableCell>
                                             {product.veterinaries && product.veterinaries.length > 0
                                                 ? product.veterinaries.map(v => v.name).join(', ')
                                                 : product.veterinary?.name || (Array.isArray(product.veterinary_id) 
                                                     ? product.veterinary_id.join(', ') 
                                                     : `Veterinaria ID: ${product.veterinary_id || '-'}`)}
-                                        </StyledTableCell>
-                                        <StyledTableCell align="right">
+                                        </TableCell>
+                                        <TableCell align="right">
                                             <Tooltip title="Editar" placement="top">
                                                 <IconButton
                                                     size="small"
@@ -285,8 +265,8 @@ function ProductsPage() {
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Tooltip>
-                                        </StyledTableCell>
-                                    </StyledTableRow>
+                                        </TableCell>
+                                    </TableRow>
                                 );
                             })
                         )}

@@ -28,30 +28,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import { styled } from '@mui/material/styles';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
 import SalesFormDialog from '../../components/SalesFormDialog';
 import SalesDetailDialog from '../../components/SalesDetailDialog';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-}));
 
 interface Sale {
     id: number;
@@ -268,14 +249,14 @@ function SalesPage() {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <StyledTableCell>ID</StyledTableCell>
-                            <StyledTableCell>Estado</StyledTableCell>
-                            <StyledTableCell>Cliente</StyledTableCell>
-                            <StyledTableCell>Monto</StyledTableCell>
-                            <StyledTableCell>Descuento</StyledTableCell>
-                            <StyledTableCell>Productos</StyledTableCell>
-                            <StyledTableCell>Fecha</StyledTableCell>
-                            <StyledTableCell align="right">Acciones</StyledTableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Estado</TableCell>
+                            <TableCell>Cliente</TableCell>
+                            <TableCell>Monto</TableCell>
+                            <TableCell>Descuento</TableCell>
+                            <TableCell>Productos</TableCell>
+                            <TableCell>Fecha</TableCell>
+                            <TableCell align="right">Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -295,9 +276,9 @@ function SalesPage() {
                             </TableRow>
                         ) : (
                             sales.map((sale) => (
-                                <StyledTableRow key={sale.id}>
-                                    <StyledTableCell>{sale.id}</StyledTableCell>
-                                    <StyledTableCell>
+                                <TableRow key={sale.id}>
+                                    <TableCell>{sale.id}</TableCell>
+                                    <TableCell>
                                         <FormControl size="small" sx={{ minWidth: 120 }}>
                                             <Select
                                                 value={sale.state || 'Completado'}
@@ -309,33 +290,33 @@ function SalesPage() {
                                                 <MenuItem value="Cancelado">Cancelado</MenuItem>
                                             </Select>
                                         </FormControl>
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {sale.client 
                                             ? `${sale.client.name} ${sale.client.last_name || ''}`.trim()
                                             : `Cliente ID: ${sale.client_id}`}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {sale.amount !== undefined && sale.amount !== null
                                             ? `bs/${sale.amount}`
                                             : '-'}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {sale.discount !== undefined && sale.discount !== null
                                             ? `bs/${sale.discount}`
                                             : '-'}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {sale.products && sale.products.length > 0
                                             ? `${sale.products.length} producto(s)`
                                             : '-'}
-                                    </StyledTableCell>
-                                    <StyledTableCell>
+                                    </TableCell>
+                                    <TableCell>
                                         {sale.created_at 
                                             ? new Date(sale.created_at).toLocaleDateString()
                                             : '-'}
-                                    </StyledTableCell>
-                                    <StyledTableCell align="right">
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Tooltip title="Ver Detalle" placement="top">
                                             <IconButton
                                                 size="small"
@@ -345,8 +326,8 @@ function SalesPage() {
                                                 <VisibilityIcon />
                                             </IconButton>
                                         </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                     </TableBody>
