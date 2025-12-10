@@ -44,13 +44,27 @@ const theme = createTheme({
                 },
             },
         },
-        // MuiTableHead: {
-        //     styleOverrides: {
-        //         root: {
-        //             backgroundColor: 'primary.main',
-        //         },
-        //     },
-        // },
+        MuiTableHead: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: '#1876d3',
+                    'th': {
+                        color: 'white',
+                        fontWeight: 'bold',
+                    },
+                },
+            },
+        },
+        MuiTableRow:{
+            styleOverrides: {
+                root: {
+                    '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                    },
+                    'transition': 'background-color 0.2s',
+                },
+            },
+        }
     },
 });
 

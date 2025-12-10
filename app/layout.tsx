@@ -165,7 +165,7 @@ function getNavigation(
         });
     }
     // libro de compras y ventas
-    if (hasPermission('view any movements')) {
+    if (hasPermission('view any movements') && hasRole('veterinary')) {
         navigation.push({
             segment: 'movements-analytics',
             title: 'Libro de compras y ventas',

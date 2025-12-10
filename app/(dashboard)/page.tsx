@@ -24,6 +24,10 @@ import {
     Tooltip,
     Tabs,
     Tab,
+    Grid,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from '@mui/material';
 import {
     TrendingUp,
@@ -39,6 +43,7 @@ import {
     WarningAmber,
     Assignment,
     ErrorOutline,
+    ExpandMore,
 } from '@mui/icons-material';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import {
@@ -208,9 +213,9 @@ export default function HomePage() {
         <PageContainer>
             <Box sx={{ p: 3 }}>
                 {/* 3 Cajas superiores */}
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4 }}>
+                <Grid container spacing={4}>
                     {stats.map((stat, index) => (
-                        <Box key={index} sx={{ flex: 1, minWidth: { xs: '100%', sm: '300px' } }}>
+                        <Grid key={index} size={{ xs: 12, md: 4 }}>
                             <Card
                                 sx={{
                                     height: '100%',
@@ -261,35 +266,43 @@ export default function HomePage() {
                                     </Stack>
                                 </CardContent>
                             </Card>
-                        </Box>
+                        </Grid>
                     ))}
-                </Stack>
 
-                {/* 2 columnas con tablas */}
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 4 }}>
-                    {/* Card de Mascotas Atendidas */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%', md: '300px' } }}>
-                        <Card
-                            elevation={3}
+                    {/* Accordion de Mascotas Atendidas */}
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Accordion
+                            defaultExpanded={false}
                             sx={{
-                                height: '100%',
                                 borderRadius: 3,
                                 overflow: 'hidden',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                '&:hover': {
-                                    boxShadow: 6,
+                                boxShadow: 3,
+                                '&:before': {
+                                    display: 'none',
+                                },
+                                '&.Mui-expanded': {
+                                    margin: 0,
                                 },
                             }}
                         >
-                            {/* Header */}
-                            <Box
+                            <AccordionSummary
+                                expandIcon={
+                                    <ExpandMore sx={{ color: 'white' }} />
+                                }
                                 sx={{
                                     background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                                     color: 'white',
                                     p: 2.5,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
+                                    minHeight: 72,
+                                    '&.Mui-expanded': {
+                                        minHeight: 72,
+                                        margin: '0px 0px !important',
+                                    },
+                                    '& .MuiAccordionSummary-content': {
+                                        margin: 0,
+                                        alignItems: 'center',
+                                        gap: 2,
+                                    },
                                 }}
                             >
                                 <Avatar
@@ -309,102 +322,104 @@ export default function HomePage() {
                                         Recientemente
                                     </Typography>
                                 </Box>
-                            </Box>
-
-                            {/* Tabla */}
-                            <TableContainer>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow sx={{ backgroundColor: 'action.hover' }}>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Mascota</TableCell>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Especie</TableCell>
-                                            <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
-                                                Acción
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {recentPets.map((pet, index) => (
-                                            <TableRow
-                                                key={pet.id}
-                                                sx={{
-                                                    '&:hover': {
-                                                        backgroundColor: 'action.hover',
-                                                        cursor: 'pointer',
-                                                    },
-                                                    transition: 'background-color 0.2s',
-                                                }}
-                                            >
-                                                <TableCell>
-                                                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                                                        <Box>
-                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                                {pet.name}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {pet.lastVisit}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Stack>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Chip
-                                                        label={pet.species}
-                                                        size="small"
-                                                        sx={{
-                                                            bgcolor: pet.type === 'Canino' ? '#e3f2fd' : '#fce4ec',
-                                                            color: pet.type === 'Canino' ? '#1976d2' : '#c2185b',
-                                                            fontWeight: 500,
-                                                        }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    <Tooltip title="Ver detalles">
-                                                        <IconButton
-                                                            size="small"
-                                                            sx={{
-                                                                color: 'primary.main',
-                                                                '&:hover': {
-                                                                    bgcolor: 'primary.light',
-                                                                    color: 'white',
-                                                                },
-                                                            }}
-                                                        >
-                                                            <ArrowForwardIos fontSize="small" />
-                                                        </IconButton>
-                                                    </Tooltip>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ p: 0 }}>
+                                <TableContainer>
+                                    <Table size="small">
+                                        <TableHead sx={{ backgroundColor: 'transparent', '& th': { color: 'black' } }}>
+                                            <TableRow sx={{ backgroundColor: 'action.hover' }}>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Mascota</TableCell>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Especie</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
+                                                    Acción
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Card>
-                    </Box>
-
-                    {/* Card de Productos Más Vendidos */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%', md: '300px' } }}>
-                        <Card
-                            elevation={3}
+                                        </TableHead>
+                                        <TableBody>
+                                            {recentPets.map((pet, index) => (
+                                                <TableRow
+                                                    key={pet.id}
+                                                >
+                                                    <TableCell>
+                                                        <Stack direction="row" alignItems="center" spacing={1.5}>
+                                                            <Box>
+                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                    {pet.name}
+                                                                </Typography>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {pet.lastVisit}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Stack>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={pet.species}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: pet.type === 'Canino' ? '#e3f2fd' : '#fce4ec',
+                                                                color: pet.type === 'Canino' ? '#1976d2' : '#c2185b',
+                                                                fontWeight: 500,
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <Tooltip title="Ver detalles">
+                                                            <IconButton
+                                                                size="small"
+                                                                sx={{
+                                                                    color: 'primary.main',
+                                                                    '&:hover': {
+                                                                        bgcolor: 'primary.light',
+                                                                        color: 'white',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <ArrowForwardIos fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Accordion
+                            defaultExpanded={false}
                             sx={{
-                                height: '100%',
                                 borderRadius: 3,
                                 overflow: 'hidden',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                '&:hover': {
-                                    boxShadow: 6,
+                                boxShadow: 3,
+                                '&:before': {
+                                    display: 'none',
+                                },
+                                '&.Mui-expanded': {
+                                    margin: 0,
                                 },
                             }}
                         >
-                            {/* Header */}
-                            <Box
+                            <AccordionSummary
+                                expandIcon={
+                                    <ExpandMore sx={{ color: 'white' }} />
+                                }
                                 sx={{
                                     background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
                                     color: 'white',
                                     p: 2.5,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
+                                    minHeight: 72,
+                                    '&.Mui-expanded': {
+                                        minHeight: 72,
+                                        margin: '0px 0px !important',
+                                    },
+                                    '& .MuiAccordionSummary-content': {
+                                        margin: 0,
+                                        alignItems: 'center',
+                                        gap: 2,
+                                    },
                                 }}
                             >
                                 <Avatar
@@ -424,86 +439,120 @@ export default function HomePage() {
                                         Top 5 del mes
                                     </Typography>
                                 </Box>
-                            </Box>
-
-                            {/* Tabla */}
-                            <TableContainer>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow sx={{ backgroundColor: 'action.hover' }}>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Producto</TableCell>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Cantidad</TableCell>
-                                            <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
-                                                Ingresos
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {topProducts.map((product) => (
-                                            <TableRow
-                                                key={product.id}
-                                                sx={{
-                                                    '&:hover': {
-                                                        backgroundColor: 'action.hover',
-                                                        cursor: 'pointer',
-                                                    },
-                                                    transition: 'background-color 0.2s',
-                                                }}
-                                            >
-                                                <TableCell>
-                                                    <Box>
-                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                            {product.name}
-                                                        </Typography>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                        {product.quantity}
-                                                    </Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        unidades
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>
-                                                        {product.revenue}
-                                                    </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ p: 0 }}>
+                                <TableContainer>
+                                    <Table size="small">
+                                        <TableHead sx={{ backgroundColor: 'transparent', '& th': { color: 'black' } }}>
+                                            <TableRow sx={{ backgroundColor: 'action.hover' }}>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>#</TableCell>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Producto</TableCell>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Cantidad</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
+                                                    Ingresos
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Card>
-                    </Box>
-                </Stack>
-
-                {/* 2 columnas con tablas */}
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 4 }}>
-                    {/* Card de Consultas Frecuentes */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%', md: '300px' } }}>
-                        <Card
-                            elevation={3}
+                                        </TableHead>
+                                        <TableBody>
+                                            {topProducts.map((product) => (
+                                                <TableRow
+                                                    key={product.id}
+                                                >
+                                                    <TableCell>
+                                                        <Box
+                                                            sx={{
+                                                                width: 28,
+                                                                height: 28,
+                                                                borderRadius: '50%',
+                                                                bgcolor: product.rank <= 3 ? 'primary.main' : 'grey.300',
+                                                                color: product.rank <= 3 ? 'white' : 'text.primary',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontWeight: 700,
+                                                                fontSize: '0.875rem',
+                                                            }}
+                                                        >
+                                                            {product.rank}
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box>
+                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                {product.name}
+                                                            </Typography>
+                                                            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+                                                                {product.change.startsWith('+') ? (
+                                                                    <TrendingUp sx={{ fontSize: 14, color: 'success.main' }} />
+                                                                ) : (
+                                                                    <TrendingDown sx={{ fontSize: 14, color: 'error.main' }} />
+                                                                )}
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    sx={{
+                                                                        color: product.change.startsWith('+') ? 'success.main' : 'error.main',
+                                                                        fontWeight: 600,
+                                                                    }}
+                                                                >
+                                                                    {product.change}
+                                                                </Typography>
+                                                            </Stack>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                            {product.quantity}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            unidades
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>
+                                                            {product.revenue}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Accordion
+                            defaultExpanded={false}
                             sx={{
-                                height: '100%',
                                 borderRadius: 3,
                                 overflow: 'hidden',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                '&:hover': {
-                                    boxShadow: 6,
+                                boxShadow: 3,
+                                '&:before': {
+                                    display: 'none',
+                                },
+                                '&.Mui-expanded': {
+                                    margin: 0,
                                 },
                             }}
                         >
-                            {/* Header */}
-                            <Box
+                            <AccordionSummary
+                                expandIcon={
+                                    <ExpandMore sx={{ color: 'white' }} />
+                                }
                                 sx={{
                                     background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
                                     color: 'white',
                                     p: 2.5,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
+                                    minHeight: 72,
+                                    '&.Mui-expanded': {
+                                        minHeight: 72,
+                                        margin: '0px 0px !important',
+                                    },
+                                    '& .MuiAccordionSummary-content': {
+                                        margin: 0,
+                                        alignItems: 'center',
+                                        gap: 2,
+                                    },
                                 }}
                             >
                                 <Avatar
@@ -523,140 +572,141 @@ export default function HomePage() {
                                         Top 5 del mes
                                     </Typography>
                                 </Box>
-                            </Box>
-
-                            {/* Tabla */}
-                            <TableContainer>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow sx={{ backgroundColor: 'action.hover' }}>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>#</TableCell>
-                                            <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Tipo de Consulta</TableCell>
-                                            <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
-                                                Cantidad
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {frequentConsultations.map((consultation) => (
-                                            <TableRow
-                                                key={consultation.id}
-                                                sx={{
-                                                    '&:hover': {
-                                                        backgroundColor: 'action.hover',
-                                                        cursor: 'pointer',
-                                                    },
-                                                    transition: 'background-color 0.2s',
-                                                }}
-                                            >
-                                                <TableCell>
-                                                    <Box
-                                                        sx={{
-                                                            width: 28,
-                                                            height: 28,
-                                                            borderRadius: '50%',
-                                                            bgcolor: consultation.rank <= 3 ? 'primary.main' : 'grey.300',
-                                                            color: consultation.rank <= 3 ? 'white' : 'text.primary',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            fontWeight: 700,
-                                                            fontSize: '0.875rem',
-                                                        }}
-                                                    >
-                                                        {consultation.rank}
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Box>
-                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                            {consultation.type}
-                                                        </Typography>
-                                                        <Box
-                                                            sx={{
-                                                                mt: 0.5,
-                                                                width: '100%',
-                                                                height: 4,
-                                                                bgcolor: 'grey.200',
-                                                                borderRadius: 2,
-                                                                overflow: 'hidden',
-                                                            }}
-                                                        >
-                                                            <Box
-                                                                sx={{
-                                                                    width: `${consultation.percentage}%`,
-                                                                    height: '100%',
-                                                                    bgcolor: consultation.rank <= 3 ? 'primary.main' : 'grey.400',
-                                                                    transition: 'width 0.3s ease',
-                                                                }}
-                                                            />
-                                                        </Box>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                                            {consultation.percentage}% del total
-                                                        </Typography>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                                                        {consultation.count}
-                                                    </Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        consultas
-                                                    </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ p: 0 }}>
+                                <TableContainer>
+                                    <Table size="small">
+                                        <TableHead sx={{ backgroundColor: 'transparent', '& th': { color: 'black' } }}>
+                                            <TableRow sx={{ backgroundColor: 'action.hover' }}>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>#</TableCell>
+                                                <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Tipo de Consulta</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 600, py: 1.5 }}>
+                                                    Cantidad
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-
-                            {/* Footer */}
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    borderTop: '1px solid',
-                                    borderColor: 'divider',
-                                    backgroundColor: 'action.hover',
-                                }}
-                            >
-                                <Button
-                                    fullWidth
-                                    variant="text"
-                                    endIcon={<ArrowForwardIos fontSize="small" />}
+                                        </TableHead>
+                                        <TableBody>
+                                            {frequentConsultations.map((consultation) => (
+                                                <TableRow
+                                                    key={consultation.id}
+                                                >
+                                                    <TableCell>
+                                                        <Box
+                                                            sx={{
+                                                                width: 28,
+                                                                height: 28,
+                                                                borderRadius: '50%',
+                                                                bgcolor: consultation.rank <= 3 ? 'primary.main' : 'grey.300',
+                                                                color: consultation.rank <= 3 ? 'white' : 'text.primary',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontWeight: 700,
+                                                                fontSize: '0.875rem',
+                                                            }}
+                                                        >
+                                                            {consultation.rank}
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box>
+                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                {consultation.type}
+                                                            </Typography>
+                                                            <Box
+                                                                sx={{
+                                                                    mt: 0.5,
+                                                                    width: '100%',
+                                                                    height: 4,
+                                                                    bgcolor: 'grey.200',
+                                                                    borderRadius: 2,
+                                                                    overflow: 'hidden',
+                                                                }}
+                                                            >
+                                                                <Box
+                                                                    sx={{
+                                                                        width: `${consultation.percentage}%`,
+                                                                        height: '100%',
+                                                                        bgcolor: consultation.rank <= 3 ? 'primary.main' : 'grey.400',
+                                                                        transition: 'width 0.3s ease',
+                                                                    }}
+                                                                />
+                                                            </Box>
+                                                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                                                                {consultation.percentage}% del total
+                                                            </Typography>
+                                                        </Box>
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                                                            {consultation.count}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            consultas
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                                {/* Footer */}
+                                <Box
                                     sx={{
-                                        textTransform: 'none',
-                                        fontWeight: 600,
+                                        p: 2,
+                                        borderTop: '1px solid',
+                                        borderColor: 'divider',
+                                        backgroundColor: 'action.hover',
                                     }}
                                 >
-                                    Ver todas las consultas
-                                </Button>
-                            </Box>
-                        </Card>
-                    </Box>
-
-                    {/* Card de Inventario Crítico con Tabs */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%', md: '300px' } }}>
-                        <Card
-                            elevation={3}
+                                    <Button
+                                        fullWidth
+                                        variant="text"
+                                        endIcon={<ArrowForwardIos fontSize="small" />}
+                                        sx={{
+                                            textTransform: 'none',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Todas las consultas
+                                    </Button>
+                                </Box>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <Accordion
+                            defaultExpanded={false}
                             sx={{
-                                height: '100%',
                                 borderRadius: 3,
                                 overflow: 'hidden',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                '&:hover': {
-                                    boxShadow: 6,
+                                boxShadow: 3,
+                                '&:before': {
+                                    display: 'none',
+                                },
+                                '&.Mui-expanded': {
+                                    margin: 0,
                                 },
                             }}
                         >
-                            {/* Header */}
-                            <Box
+                            <AccordionSummary
+                                expandIcon={
+                                    <ExpandMore sx={{ color: 'white' }} />
+                                }
                                 sx={{
                                     background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
                                     color: 'white',
                                     p: 2.5,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
+                                    minHeight: 72,
+                                    '&.Mui-expanded': {
+                                        minHeight: 72,
+                                        margin: '0px 0px !important',
+                                    },
+                                    '& .MuiAccordionSummary-content': {
+                                        margin: 0,
+                                        alignItems: 'center',
+                                        gap: 2,
+                                    },
                                 }}
                             >
                                 <Avatar
@@ -676,31 +726,31 @@ export default function HomePage() {
                                         Requiere atención
                                     </Typography>
                                 </Box>
-                            </Box>
-
-                            {/* Tabs */}
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <Tabs
-                                    value={inventoryTab}
-                                    onChange={(e, newValue) => setInventoryTab(newValue)}
-                                    sx={{
-                                        '& .MuiTab-root': {
-                                            textTransform: 'none',
-                                            fontWeight: 600,
-                                            minHeight: 48,
-                                        },
-                                    }}
-                                >
-                                    <Tab label="Por Agotarse" />
-                                    <Tab label="Agotados" />
-                                </Tabs>
-                            </Box>
+                            </AccordionSummary>
+                            <AccordionDetails sx={{ p: 0 }}>
+                                {/* Tabs */}
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <Tabs
+                                        value={inventoryTab}
+                                        onChange={(e, newValue) => setInventoryTab(newValue)}
+                                        sx={{
+                                            '& .MuiTab-root': {
+                                                textTransform: 'none',
+                                                fontWeight: 600,
+                                                minHeight: 48,
+                                            },
+                                        }}
+                                    >
+                                        <Tab label="Por Agotarse" />
+                                        <Tab label="Agotados" />
+                                    </Tabs>
+                                </Box>
 
                             {/* Tab Panel - Productos por Agotarse */}
                             {inventoryTab === 0 && (
-                                <TableContainer>
+                                <TableContainer sx={{ borderRadius: '0px' }}>
                                     <Table size="small">
-                                        <TableHead>
+                                        <TableHead sx={{ backgroundColor: 'transparent', '& th': { color: 'black' } }}>
                                             <TableRow sx={{ backgroundColor: 'action.hover' }}>
                                                 <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Producto</TableCell>
                                                 <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Stock</TableCell>
@@ -713,13 +763,6 @@ export default function HomePage() {
                                             {runningOutProducts.map((product) => (
                                                 <TableRow
                                                     key={product.id}
-                                                    sx={{
-                                                        '&:hover': {
-                                                            backgroundColor: 'action.hover',
-                                                            cursor: 'pointer',
-                                                        },
-                                                        transition: 'background-color 0.2s',
-                                                    }}
                                                 >
                                                     <TableCell>
                                                         <Box>
@@ -765,9 +808,9 @@ export default function HomePage() {
 
                             {/* Tab Panel - Productos Agotados */}
                             {inventoryTab === 1 && (
-                                <TableContainer>
+                                <TableContainer sx={{ borderRadius: '0px' }}>
                                     <Table size="small">
-                                        <TableHead>
+                                        <TableHead sx={{ backgroundColor: 'transparent', '& th': { color: 'black' } }}>
                                             <TableRow sx={{ backgroundColor: 'action.hover' }}>
                                                 <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Producto</TableCell>
                                                 <TableCell sx={{ fontWeight: 600, py: 1.5 }}>Último Stock</TableCell>
@@ -780,13 +823,6 @@ export default function HomePage() {
                                             {outOfStockProducts.map((product) => (
                                                 <TableRow
                                                     key={product.id}
-                                                    sx={{
-                                                        '&:hover': {
-                                                            backgroundColor: 'action.hover',
-                                                            cursor: 'pointer',
-                                                        },
-                                                        transition: 'background-color 0.2s',
-                                                    }}
                                                 >
                                                     <TableCell>
                                                         <Box>
@@ -821,51 +857,49 @@ export default function HomePage() {
                                 </TableContainer>
                             )}
 
-                            {/* Footer */}
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    borderTop: '1px solid',
-                                    borderColor: 'divider',
-                                    backgroundColor: 'action.hover',
-                                }}
-                            >
-                                <Button
-                                    fullWidth
-                                    variant="text"
-                                    endIcon={<ArrowForwardIos fontSize="small" />}
+                                {/* Footer */}
+                                <Box
                                     sx={{
-                                        textTransform: 'none',
-                                        fontWeight: 600,
+                                        p: 2,
+                                        borderTop: '1px solid',
+                                        borderColor: 'divider',
+                                        backgroundColor: 'action.hover',
                                     }}
                                 >
-                                    Realizar compras
-                                </Button>
-                            </Box>
-                        </Card>
-                    </Box>
-                </Stack>
-
-                {/* Filtro de período */}
-                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                    <FormControl size="small" sx={{ minWidth: 150 }}>
-                        <InputLabel>Período</InputLabel>
-                        <Select
-                            value={filterPeriod}
-                            label="Período"
-                            onChange={(e) => setFilterPeriod(e.target.value as 'today' | 'month' | 'year')}
-                        >
-                            <MenuItem value="week">Últimos 7 Días</MenuItem>
-                            <MenuItem value="month">Este Mes</MenuItem>
-                            <MenuItem value="year">Este Año</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                {/* 2 Gráficas lineales */}
-                <Stack direction={{ xs: 'column' }} spacing={3}>
-                    {/* Gráfica de LíneChart Ventas últimos 7 días */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%' } }}>
+                                    <Button
+                                        fullWidth
+                                        variant="text"
+                                        endIcon={<ArrowForwardIos fontSize="small" />}
+                                        sx={{
+                                            textTransform: 'none',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Realizar compras
+                                    </Button>
+                                </Box>
+                            </AccordionDetails>
+                        </Accordion>
+                    </Grid>
+                    
+                    <Grid size={{ xs: 12 }}>
+                        {/* Filtro de período */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <FormControl size="small" sx={{ minWidth: 150 }}>
+                                <InputLabel>Período</InputLabel>
+                                <Select
+                                    value={filterPeriod}
+                                    label="Período"
+                                    onChange={(e) => setFilterPeriod(e.target.value as 'today' | 'month' | 'year')}
+                                >
+                                    <MenuItem value="week">Últimos 7 Días</MenuItem>
+                                    <MenuItem value="month">Este Mes</MenuItem>
+                                    <MenuItem value="year">Este Año</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
                         <Card
                             elevation={3}
                             sx={{
@@ -954,10 +988,8 @@ export default function HomePage() {
                                 </ResponsiveContainer>
                             </Box>
                         </Card>
-                    </Box>
-
-                    {/* Gráfica de LíneChart Consultas últimos 7 días */}
-                    <Box sx={{ flex: 1, minWidth: { xs: '100%' } }}>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
                         <Card
                             elevation={3}
                             sx={{
@@ -1045,8 +1077,9 @@ export default function HomePage() {
                                 </ResponsiveContainer>
                             </Box>
                         </Card>
-                    </Box>
-                </Stack>
+                    </Grid>
+                </Grid>
+
             </Box>
         </PageContainer>
     );
