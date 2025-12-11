@@ -4,7 +4,7 @@ import { API_CONFIG } from '../../../../lib/config';
 import { getAuthHeaders } from '../../../../lib/auth-utils';
 
 /**
- * GET /api/configurations/[id] - Obtener una configuración específica
+ * GET /api/content-veterinaries/[id] - Obtener un contenido específico
  * Proxy a la API de Laravel
  */
 export async function GET(
@@ -23,7 +23,7 @@ export async function GET(
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/configurations/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/content-veterinaries/${id}`, {
             method: 'GET',
             headers,
         });
@@ -32,14 +32,14 @@ export async function GET(
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Configuración no encontrada' },
+                { error: data.message || 'Contenido no encontrado' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en GET /api/configurations/[id]:', error);
+        console.error('Error en GET /api/content-veterinaries/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }
@@ -48,7 +48,7 @@ export async function GET(
 }
 
 /**
- * PUT /api/configurations/[id] - Actualizar una configuración
+ * PUT /api/content-veterinaries/[id] - Actualizar un contenido
  * Proxy a la API de Laravel
  */
 export async function PUT(
@@ -72,20 +72,17 @@ export async function PUT(
         if (contentType.includes('multipart/form-data')) {
             // Es FormData
             const formData = await req.formData();
-            // Agregar _method PATCH para Laravel
             formData.append('_method', 'PATCH');
             body = formData;
-            // No incluir Content-Type para FormData, el navegador lo establece automáticamente
             headers = await getAuthHeaders(false);
         } else {
             // Es JSON
             body = await req.json();
-            // Agregar _method PATCH para Laravel
             body._method = 'PATCH';
             headers = await getAuthHeaders();
         }
 
-        const response = await fetch(`${API_CONFIG.baseURL}/configurations/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/content-veterinaries/${id}`, {
             method: 'POST',
             headers,
             body: body instanceof FormData ? body : JSON.stringify(body),
@@ -95,14 +92,14 @@ export async function PUT(
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data.message || 'Error al actualizar configuración', errors: data.errors },
+                { error: data.message || 'Error al actualizar contenido', errors: data.errors },
                 { status: response.status }
             );
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error en PUT /api/configurations/[id]:', error);
+        console.error('Error en PUT /api/content-veterinaries/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }
@@ -111,7 +108,7 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/configurations/[id] - Eliminar una configuración
+ * DELETE /api/content-veterinaries/[id] - Eliminar un contenido
  * Proxy a la API de Laravel
  */
 export async function DELETE(
@@ -130,7 +127,7 @@ export async function DELETE(
         // Obtener headers con token de autenticación
         const headers = await getAuthHeaders();
         
-        const response = await fetch(`${API_CONFIG.baseURL}/configurations/${id}`, {
+        const response = await fetch(`${API_CONFIG.baseURL}/content-veterinaries/${id}`, {
             method: 'DELETE',
             headers,
         });
@@ -138,14 +135,14 @@ export async function DELETE(
         if (!response.ok) {
             const data = await response.json();
             return NextResponse.json(
-                { error: data.message || 'Error al eliminar configuración' },
+                { error: data.message || 'Error al eliminar contenido' },
                 { status: response.status }
             );
         }
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error en DELETE /api/configurations/[id]:', error);
+        console.error('Error en DELETE /api/content-veterinaries/[id]:', error);
         return NextResponse.json(
             { error: 'Error interno del servidor' },
             { status: 500 }

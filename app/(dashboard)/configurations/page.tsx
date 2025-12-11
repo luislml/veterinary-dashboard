@@ -4,141 +4,77 @@ import {
     Box,
     Button,
     Paper,
-    Table,
-    TableBody,
-    TableCell,
-    tableCellClasses,
-    TableContainer,
-    TableHead,
-    TableRow,
     Typography,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     TextField,
     Alert,
     CircularProgress,
-    Pagination,
-    MenuItem,
-    Select,
-    FormControl,
-    InputLabel,
-    FormHelperText,
-    Tooltip,
+    Grid,
+    Card,
+    CardContent,
+    Divider,
+    Input,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import { SnackbarProvider, VariantType, useSnackbar } from 'notistack';
-import { useConfirm } from "material-ui-confirm";
 import { useSelectedVeterinary } from '../../../lib/contexts/SelectedVeterinaryContext';
 import { useSessionWithPermissions } from '../../../lib/hooks/useSessionWithPermissions';
-
+import { API_CONFIG } from '../../../lib/config';
+import ContentVeterinariesSection from '../../components/ContentVeterinariesSection';
+import ImagesVeterinariesSection from '../../components/ImagesVeterinariesSection';
 interface Configuration {
     id: number;
-    style: string;
     veterinary_id: number;
+    color_primary: string;
+    color_secondary: string;
+    about_us: string;
+    description_team: string;
+    phone: string;
+    phone_emergency: string;
     veterinary?: {
         id: number;
         name: string;
+        slug: string;
     };
-    created_at?: string;
-    updated_at?: string;
-}
-
-interface Veterinary {
-    id: number;
-    name: string;
+    favicon?: {
+        url: string;
+    };
 }
 
 function ConfigurationsPage() {
-
     const { enqueueSnackbar } = useSnackbar();
     const { selectedVeterinary } = useSelectedVeterinary();
     const { data: session } = useSessionWithPermissions();
-    
-    // Verificar si el usuario es admin
-    const isAdmin = session?.hasRole?.('admin') || false;
-    const isVeterinary = session?.hasRole?.('veterinary') || false;
-    
-    const handleClickVariant = (variant: VariantType) => () => {
-        // variant could be success, error, warning, info, or default
-        enqueueSnackbar('This is a success message!', { variant });
-    };
 
-    const [configurations, setConfigurations] = React.useState<Configuration[]>([]);
-    const [veterinaries, setVeterinaries] = React.useState<Veterinary[]>([]);
+    const [configuration, setConfiguration] = React.useState<Configuration | null>(null);
     const [loading, setLoading] = React.useState(true);
-    const [loadingVeterinaries, setLoadingVeterinaries] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
-    const [openModal, setOpenModal] = React.useState(false);
-    const [editingConfiguration, setEditingConfiguration] = React.useState<Configuration | null>(null);
-    const [formData, setFormData] = React.useState({ 
-        style: '', 
-        veterinary_id: '' as string | number
+    const [formData, setFormData] = React.useState({
+        color_primary: '',
+        color_secondary: '',
+        about_us: '',
+        description_team: '',
+        phone: '',
+        phone_emergency: '',
     });
     const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
     const [submitting, setSubmitting] = React.useState(false);
-    const [page, setPage] = React.useState(1);
-    const [totalPages, setTotalPages] = React.useState(1);
-    const [total, setTotal] = React.useState(0);
-    const confirm = useConfirm();
+    const [faviconFile, setFaviconFile] = React.useState<File | null>(null);
+    const [faviconPreview, setFaviconPreview] = React.useState<string | null>(null);
 
-    // Cargar veterinarias (solo para admin)
-    const loadVeterinaries = React.useCallback(async () => {
-        // Solo cargar si el usuario es admin
-        if (!isAdmin) {
-            setVeterinaries([]);
+    // Cargar configuración
+    const loadConfiguration = React.useCallback(async () => {
+        if (!selectedVeterinary?.id) {
+            setLoading(false);
             return;
         }
 
         try {
-            setLoadingVeterinaries(true);
-            const response = await fetch(`/api/veterinaries?page=1&per_page=100`);
-            
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('Respuesta inválida del servidor');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar veterinarias');
-            }
-
-            if (data.data) {
-                setVeterinaries(data.data);
-            } else if (Array.isArray(data)) {
-                setVeterinaries(data);
-            } else {
-                setVeterinaries([]);
-            }
-        } catch (err) {
-            console.error('Error al cargar veterinarias:', err);
-            setVeterinaries([]);
-        } finally {
-            setLoadingVeterinaries(false);
-        }
-    }, [isAdmin]);
-
-    // Cargar configuraciones
-    const loadConfigurations = React.useCallback(async () => {
-        try {
             setLoading(true);
             setError(null);
-            
-            // Construir URL con filtro de veterinary_id si el rol es veterinary
-            let url = `/api/configurations?page=${page}&per_page=10`;
-            if (isVeterinary && selectedVeterinary?.id) {
-                url += `&veterinary_id=${selectedVeterinary.id}`;
-            }
-            
-            const response = await fetch(url);
-            
+
+            const response = await fetch(`/api/configurations?veterinary_id=${selectedVeterinary.id}`);
+
             let data;
             try {
                 data = await response.json();
@@ -147,334 +83,394 @@ function ConfigurationsPage() {
             }
 
             if (!response.ok) {
-                throw new Error(data.error || data.message || 'Error al cargar configuraciones');
+                throw new Error(data.error || data.message || 'Error al cargar configuración');
             }
 
-            // Adaptar respuesta de Laravel
-            if (data.data) {
-                setConfigurations(data.data);
-                setTotal(data?.meta?.total || data.data.length);
-                setTotalPages(data?.meta?.last_page || Math.ceil((data?.meta?.total || data.data.length) / 10));
-            } else if (Array.isArray(data)) {
-                setConfigurations(data);
-                setTotal(data.length);
-                setTotalPages(Math.ceil(data.length / 10));
+            // La respuesta viene como { data: [...] }
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                const config = data.data[0];
+                setConfiguration(config);
+                setFormData({
+                    color_primary: config.color_primary || '',
+                    color_secondary: config.color_secondary || '',
+                    about_us: config.about_us || '',
+                    description_team: config.description_team || '',
+                    phone: config.phone || '',
+                    phone_emergency: config.phone_emergency || '',
+                });
             } else {
-                setConfigurations([]);
-                setTotal(0);
-                setTotalPages(1);
+                setError('No se encontró configuración para esta veterinaria');
+                setConfiguration(null);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error al cargar configuraciones');
-            setConfigurations([]);
+            setError(err instanceof Error ? err.message : 'Error al cargar configuración');
+            setConfiguration(null);
         } finally {
             setLoading(false);
         }
-    }, [page, isVeterinary, selectedVeterinary?.id]);
+    }, [selectedVeterinary?.id]);
 
     React.useEffect(() => {
-        loadConfigurations();
-        // Solo cargar veterinarias si es admin
-        if (isAdmin) {
-            loadVeterinaries();
+        loadConfiguration();
+    }, [loadConfiguration]);
+
+    // Manejar selección de archivo de favicon
+    const handleFaviconChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setFaviconFile(file);
+            // Crear preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFaviconPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
-    }, [loadConfigurations, loadVeterinaries, isAdmin]);
+    };
 
-    // Resetear página cuando cambie la veterinaria seleccionada
-    React.useEffect(() => {
-        if (isVeterinary && selectedVeterinary?.id) {
-            setPage(1);
+    // Limpiar preview de favicon
+    const handleRemoveFavicon = () => {
+        setFaviconFile(null);
+        setFaviconPreview(null);
+        // Resetear el input file
+        const fileInput = document.getElementById('favicon-input') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
         }
-    }, [isVeterinary, selectedVeterinary?.id]);
-
-    // Abrir modal para crear
-    const handleCreate = () => {
-        setEditingConfiguration(null);
-        // Si es veterinary, usar la veterinaria activa por defecto
-        const defaultVeterinaryId = !isAdmin && selectedVeterinary?.id 
-            ? selectedVeterinary.id 
-            : '';
-        setFormData({ style: '', veterinary_id: defaultVeterinaryId });
-        setFormErrors({});
-        setOpenModal(true);
     };
 
-    // Abrir modal para editar
-    const handleEdit = (configuration: Configuration) => {
-        setEditingConfiguration(configuration);
-        setFormData({ 
-            style: configuration.style || '', 
-            veterinary_id: configuration.veterinary_id || (!isAdmin && selectedVeterinary?.id ? selectedVeterinary.id : '')
-        });
-        setFormErrors({});
-        setOpenModal(true);
-    };
+    // Actualizar configuración
+    const handleUpdate = async () => {
+        if (!configuration) return;
 
-    // Cerrar modal
-    const handleCloseModal = () => {
-        setOpenModal(false);
-        setEditingConfiguration(null);
-        // Si es veterinary, usar la veterinaria activa por defecto
-        const defaultVeterinaryId = !isAdmin && selectedVeterinary?.id 
-            ? selectedVeterinary.id 
-            : '';
-        setFormData({ style: '', veterinary_id: defaultVeterinaryId });
-        setFormErrors({});
-    };
-
-    // Guardar configuración (crear o actualizar)
-    const handleSave = async () => {
         setFormErrors({});
         setSubmitting(true);
 
         try {
-            const url = editingConfiguration ? `/api/configurations/${editingConfiguration.id}` : '/api/configurations';
-            const method = editingConfiguration ? 'PUT' : 'POST';
+            // Si hay archivo de favicon, usar FormData, sino JSON
+            if (faviconFile) {
+                const formDataToSend = new FormData();
+                formDataToSend.append('color_primary', formData.color_primary);
+                formDataToSend.append('color_secondary', formData.color_secondary);
+                formDataToSend.append('about_us', formData.about_us);
+                formDataToSend.append('description_team', formData.description_team);
+                formDataToSend.append('phone', formData.phone);
+                formDataToSend.append('phone_emergency', formData.phone_emergency);
+                formDataToSend.append('favicon', faviconFile);
+                formDataToSend.append('_method', 'PATCH');
 
-            // Si es veterinary y no hay veterinary_id, usar la veterinaria activa
-            let veterinaryId = formData.veterinary_id;
-            if (!isAdmin && (!veterinaryId || veterinaryId === '') && selectedVeterinary?.id) {
-                veterinaryId = selectedVeterinary.id;
-            }
+                const response = await fetch(`/api/configurations/${configuration.id}`, {
+                    method: 'PUT',
+                    body: formDataToSend,
+                });
 
-            const dataToSend = {
-                style: formData.style,
-                veterinary_id: veterinaryId,
-            };
+                const data = await response.json();
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSend),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                if (data.errors) {
-                    setFormErrors(data.errors);
-                } else {
-                    setFormErrors({ general: data.message || data.error || 'Error al guardar configuración' });
+                if (!response.ok) {
+                    if (data.errors) {
+                        setFormErrors(data.errors);
+                    } else {
+                        setFormErrors({ general: data.message || data.error || 'Error al actualizar configuración' });
+                    }
+                    enqueueSnackbar('Error al actualizar configuración', { variant: 'error' });
+                    return;
                 }
-                return;
-            }
 
-            handleCloseModal();
-            loadConfigurations();
-            // Show success snackbar
-            enqueueSnackbar(editingConfiguration ? 'Configuración actualizada correctamente' : 'Configuración creada correctamente', { variant: 'success' });
+                // Limpiar el archivo después de guardar
+                setFaviconFile(null);
+                setFaviconPreview(null);
+                const fileInput = document.getElementById('favicon-input') as HTMLInputElement;
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                // Recargar la configuración actualizada
+                await loadConfiguration();
+                enqueueSnackbar('Configuración actualizada correctamente', { variant: 'success' });
+            } else {
+                // Sin archivo, usar JSON
+                const response = await fetch(`/api/configurations/${configuration.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        color_primary: formData.color_primary,
+                        color_secondary: formData.color_secondary,
+                        about_us: formData.about_us,
+                        description_team: formData.description_team,
+                        phone: formData.phone,
+                        phone_emergency: formData.phone_emergency,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (data.errors) {
+                        setFormErrors(data.errors);
+                    } else {
+                        setFormErrors({ general: data.message || data.error || 'Error al actualizar configuración' });
+                    }
+                    enqueueSnackbar('Error al actualizar configuración', { variant: 'error' });
+                    return;
+                }
+
+                // Recargar la configuración actualizada
+                await loadConfiguration();
+                enqueueSnackbar('Configuración actualizada correctamente', { variant: 'success' });
+            }
         } catch (err) {
-            setFormErrors({ general: err instanceof Error ? err.message : 'Error al guardar configuración' });
-            // Show error snackbar
-            enqueueSnackbar(editingConfiguration ? 'Error al actualizar configuración' : 'Error al crear configuración', { variant: 'error' });
+            setFormErrors({ general: err instanceof Error ? err.message : 'Error al actualizar configuración' });
+            enqueueSnackbar('Error al actualizar configuración', { variant: 'error' });
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Eliminar configuración
-    const handleDelete = async (configurationId: number) => {
-        const { confirmed, reason } = await confirm({
-            title: "Eliminar Configuración",
-            description: "¿Estás seguro de que deseas eliminar esta configuración?",
-            confirmationText: "Eliminar",
-            cancellationText: "Cancelar"
-        });
-    
-        if (!confirmed) return;
-
-        try {
-            const response = await fetch(`/api/configurations/${configurationId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                // Show error snackbar
-                enqueueSnackbar(data.error || data.message || 'Error al eliminar configuración', { variant: 'error' });
-                return;
-            }
-
-            loadConfigurations();
-            // Show success snackbar
-            enqueueSnackbar('Configuración eliminada correctamente', { variant: 'success' });
-        } catch (err) {
-            // Show error snackbar
-            enqueueSnackbar(err instanceof Error ? err.message : 'Error al eliminar configuración', { variant: 'error' });
-        }
-    };
+    if (!selectedVeterinary?.id) {
+        return (
+            <PageContainer>
+                <Alert severity="warning">
+                    Por favor, selecciona una veterinaria para ver sus configuraciones.
+                </Alert>
+            </PageContainer>
+        );
+    }
 
     return (
         <PageContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5">Lista de Configuraciones</Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={handleCreate}
-                >
-                    Nueva Configuración
-                </Button>
+            <Box sx={{ mb: 3 }}>
+                <Typography variant="h5" gutterBottom>
+                    Configuraciones Generales
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                    {selectedVeterinary.name}
+                </Typography>
             </Box>
 
-            {error && (
+            {error && !loading && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {error}
                 </Alert>
             )}
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>ID</TableCell>
-                            <TableCell>Estilo</TableCell>
-                            {isAdmin && <TableCell>Veterinaria</TableCell>}
-                            <TableCell align="right">Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={isAdmin ? 4 : 3} align="center">
-                                    <CircularProgress />
-                                </TableCell>
-                            </TableRow>
-                        ) : configurations.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={isAdmin ? 4 : 3} align="center">
-                                    <Typography variant="body2" color="text.secondary">
-                                        No hay configuraciones disponibles
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            configurations.map((configuration) => (
-                                <TableRow key={configuration.id}>
-                                    <TableCell>{configuration.id}</TableCell>
-                                    <TableCell>
-                                        <Typography 
-                                            variant="body2" 
-                                            sx={{ 
-                                                maxWidth: 400, 
-                                                overflow: 'hidden', 
-                                                textOverflow: 'ellipsis', 
-                                                whiteSpace: 'nowrap' 
-                                            }}
-                                        >
-                                            {configuration.style || '-'}
-                                        </Typography>
-                                    </TableCell>
-                                    {isAdmin && (
-                                        <TableCell>
-                                            {configuration.veterinary?.name || `ID: ${configuration.veterinary_id}`}
-                                        </TableCell>
-                                    )}
-                                    <TableCell align="right">
-                                        <Tooltip title="Editar" placement="top">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleEdit(configuration)}
-                                            >
-                                                <EditIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Eliminar" placement="top">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleDelete(configuration.id)}
-                                                color="error"
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                    <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={(_, newPage) => setPage(newPage)}
-                        color="primary"
-                    />
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+                    <CircularProgress />
                 </Box>
+            ) : configuration ? (
+                <Card>
+                    <CardContent>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography variant="h6" gutterBottom>
+                                Información General
+                            </Typography>
+                            <Divider sx={{ mb: 3 }} />
+                        </Box>
+
+                        {formErrors.general && (
+                            <Alert severity="error" sx={{ mb: 2 }}>
+                                {formErrors.general}
+                            </Alert>
+                        )}
+
+                        <Grid container spacing={3}>
+                            {/* Colores */}
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Color Primario"
+                                    type="color"
+                                    fullWidth
+                                    size="small"
+                                    value={formData.color_primary}
+                                    onChange={(e) => setFormData({ ...formData, color_primary: e.target.value })}
+                                    error={!!formErrors.color_primary}
+                                    helperText={formErrors.color_primary}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                    inputProps={{
+                                        style: { height: '30px' },
+                                    }}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Color Secundario"
+                                    type="color"
+                                    fullWidth
+                                    size="small"
+                                    value={formData.color_secondary}
+                                    onChange={(e) => setFormData({ ...formData, color_secondary: e.target.value })}
+                                    error={!!formErrors.color_secondary}
+                                    helperText={formErrors.color_secondary}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                    inputProps={{
+                                        style: { height: '30px' },
+                                    }}
+                                />
+                            </Grid>
+
+                            {/* Teléfonos */}
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Teléfono"
+                                    fullWidth
+                                    size="small"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    error={!!formErrors.phone}
+                                    helperText={formErrors.phone}
+                                />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                                <TextField
+                                    label="Teléfono de Emergencia"
+                                    fullWidth
+                                    size="small"
+                                    value={formData.phone_emergency}
+                                    onChange={(e) => setFormData({ ...formData, phone_emergency: e.target.value })}
+                                    error={!!formErrors.phone_emergency}
+                                    helperText={formErrors.phone_emergency}
+                                />
+                            </Grid>
+
+                            {/* Sobre Nosotros */}
+                            <Grid size={{ xs: 12 }}>
+                                <TextField
+                                    label="Sobre Nosotros"
+                                    fullWidth
+                                    size="small"
+                                    multiline
+                                    rows={4}
+                                    value={formData.about_us}
+                                    onChange={(e) => setFormData({ ...formData, about_us: e.target.value })}
+                                    error={!!formErrors.about_us}
+                                    helperText={formErrors.about_us}
+                                    placeholder="Descripción sobre la veterinaria..."
+                                />
+                            </Grid>
+
+                            {/* Descripción del Equipo */}
+                            <Grid size={{ xs: 12 }}>
+                                <TextField
+                                    label="Descripción del Equipo"
+                                    fullWidth
+                                    size="small"
+                                    multiline
+                                    rows={4}
+                                    value={formData.description_team}
+                                    onChange={(e) => setFormData({ ...formData, description_team: e.target.value })}
+                                    error={!!formErrors.description_team}
+                                    helperText={formErrors.description_team}
+                                    placeholder="Descripción del equipo de profesionales..."
+                                />
+                            </Grid>
+
+                            {/* Favicon */}
+                            <Grid size={{ xs: 12 }}>
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="subtitle2" gutterBottom>
+                                        Favicon
+                                    </Typography>
+                                    
+                                    {/* Vista previa del favicon actual o nuevo */}
+                                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        {(faviconPreview || configuration.favicon) && (
+                                            <Box
+                                                component="img"
+                                                src={faviconPreview || `${API_CONFIG.baseURL.replace('/api', '')}/${configuration.favicon?.url}`}
+                                                alt="Favicon"
+                                                sx={{
+                                                    width: 64,
+                                                    height: 64,
+                                                    objectFit: 'contain',
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                    borderRadius: 1,
+                                                    p: 1,
+                                                    backgroundColor: 'background.paper',
+                                                }}
+                                            />
+                                        )}
+                                        
+                                        {faviconPreview && (
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="error"
+                                                onClick={handleRemoveFavicon}
+                                            >
+                                                Eliminar Nuevo
+                                            </Button>
+                                        )}
+                                    </Box>
+
+                                    {/* Input para subir nuevo favicon */}
+                                    <Box>
+                                        <Input
+                                            id="favicon-input"
+                                            type="file"
+                                            inputProps={{
+                                                accept: 'image/*',
+                                            }}
+                                            onChange={handleFaviconChange}
+                                            sx={{ display: 'none' }}
+                                        />
+                                        <label htmlFor="favicon-input">
+                                            <Button
+                                                variant="outlined"
+                                                component="span"
+                                                size="small"
+                                                disabled={submitting}
+                                            >
+                                                {faviconFile ? 'Cambiar Favicon' : 'Subir Nuevo Favicon'}
+                                            </Button>
+                                        </label>
+                                        {formErrors.favicon && (
+                                            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                                                {formErrors.favicon}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </Box>
+                            </Grid>
+                        </Grid>
+
+                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                            <Button
+                                variant="contained"
+                                startIcon={submitting ? <CircularProgress size={20} /> : <SaveIcon />}
+                                onClick={handleUpdate}
+                                disabled={submitting}
+                            >
+                                {submitting ? 'Guardando...' : 'Guardar Cambios'}
+                            </Button>
+                        </Box>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Alert severity="info">
+                    No se encontró configuración para esta veterinaria.
+                </Alert>
+            )}
+            
+            <Box sx={{ mt: 4 }}></Box>
+
+            {/* Secciones del Sitio */}
+            {selectedVeterinary?.id && (
+                <ContentVeterinariesSection veterinaryId={selectedVeterinary.id} />
             )}
 
-            {/* Modal para crear/editar */}
-            <Dialog open={openModal} onClose={handleCloseModal} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }}>
-                    {editingConfiguration ? 'Editar Configuración' : 'Nueva Configuración'}
-                </DialogTitle>
-                <DialogContent dividers>
-                    {formErrors.general && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                            {formErrors.general}
-                        </Alert>
-                    )}
-                    {isAdmin && (
-                        <FormControl fullWidth size="small" error={!!formErrors.veterinary_id} sx={{ mb: 2 }}>
-                            <InputLabel>Veterinaria</InputLabel>
-                            <Select
-                                value={formData.veterinary_id}
-                                label="Veterinaria"
-                                onChange={(e) => setFormData({ ...formData, veterinary_id: e.target.value })}
-                                disabled={loadingVeterinaries}
-                            >
-                                {veterinaries.map((veterinary) => (
-                                    <MenuItem key={veterinary.id} value={veterinary.id}>
-                                        {veterinary.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                            {formErrors.veterinary_id && <FormHelperText>{formErrors.veterinary_id}</FormHelperText>}
-                            {loadingVeterinaries && <FormHelperText>Cargando veterinarias...</FormHelperText>}
-                        </FormControl>
-                    )}
-                    {!isAdmin && selectedVeterinary && (
-                        <TextField
-                            label="Veterinaria"
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            value={selectedVeterinary.name}
-                            disabled
-                            sx={{ mb: 2 }}
-                        />
-                    )}
-                    <TextField
-                        label="Estilo"
-                        fullWidth
-                        variant="outlined"
-                        multiline
-                        rows={6}
-                        size="small"
-                        value={formData.style}
-                        onChange={(e) => setFormData({ ...formData, style: e.target.value })}
-                        error={!!formErrors.style}
-                        helperText={formErrors.style}
-                        placeholder="Ingrese el estilo de configuración..."
-                        sx={{ mb: 2 }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseModal} disabled={submitting} color="error">
-                        Cancelar
-                    </Button>
-                    <Button onClick={handleSave} variant="contained" disabled={submitting}>
-                        {submitting ? <CircularProgress size={20} /> : 'Guardar'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            
+            <Box sx={{ mt: 4 }}></Box>
+
+            {/* Imagenes del Sitio */}
+            {selectedVeterinary?.id && (
+                <ImagesVeterinariesSection veterinaryId={selectedVeterinary.id} />
+            )}
         </PageContainer>
     );
 }
@@ -486,4 +482,3 @@ export default function IntegrationNotistack() {
         </SnackbarProvider>
     );
 }
-
