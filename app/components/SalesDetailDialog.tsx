@@ -46,17 +46,17 @@ interface SalesDetailDialogProps {
 }
 
 export default function SalesDetailDialog({ open, onClose, sale }: SalesDetailDialogProps) {
-    if (!sale) return null;
-
     // Calcular subtotal
     const subtotal = React.useMemo(() => {
-        if (!sale.products || sale.products.length === 0) return 0;
+        if (!sale || !sale.products || sale.products.length === 0) return 0;
         return sale.products.reduce((sum, item) => {
             const price = typeof item.price_unit === 'string' ? parseFloat(item.price_unit) : item.price_unit;
             const quantity = typeof item.quantity === 'string' ? parseInt(item.quantity) : item.quantity;
             return sum + (price * quantity);
         }, 0);
-    }, [sale.products]);
+    }, [sale?.products]);
+
+    if (!sale) return null;
 
     const discount = typeof sale.discount === 'string' ? parseFloat(sale.discount) : (sale.discount || 0);
     const total = typeof sale.amount === 'string' ? parseFloat(sale.amount) : (sale.amount || 0);

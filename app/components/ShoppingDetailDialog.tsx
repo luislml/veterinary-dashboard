@@ -39,17 +39,17 @@ interface ShoppingDetailDialogProps {
 }
 
 export default function ShoppingDetailDialog({ open, onClose, shopping }: ShoppingDetailDialogProps) {
-    if (!shopping) return null;
-
     // Calcular subtotal
     const subtotal = React.useMemo(() => {
-        if (!shopping.products || shopping.products.length === 0) return 0;
+        if (!shopping || !shopping.products || shopping.products.length === 0) return 0;
         return shopping.products.reduce((sum, item) => {
             const price = typeof item.price_unit === 'string' ? parseFloat(item.price_unit) : item.price_unit;
             const quantity = typeof item.quantity === 'string' ? parseInt(item.quantity) : item.quantity;
             return sum + (price * quantity);
         }, 0);
-    }, [shopping.products]);
+    }, [shopping?.products]);
+
+    if (!shopping) return null;
 
     const total = typeof shopping.amount === 'string' ? parseFloat(shopping.amount) : (shopping.amount || 0);
 
