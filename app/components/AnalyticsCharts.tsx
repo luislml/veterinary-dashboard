@@ -42,6 +42,8 @@ interface ConsultationsAnalyticsResponse {
     summary: {
         total_consultations: number;
     };
+    error?: string;
+    message?: string;
 }
 
 interface AnalyticsChartsProps {
