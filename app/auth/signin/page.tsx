@@ -72,6 +72,9 @@ export default function SignIn() {
             // NEXT_REDIRECT es lanzado por Next.js cuando el login es exitoso
             if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
                 setSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 100);
             } else {
                 setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
             }
