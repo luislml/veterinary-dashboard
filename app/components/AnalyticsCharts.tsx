@@ -37,6 +37,16 @@ interface ConsultationData {
     total_consultations: number;
 }
 
+interface FormattedSalesData {
+    name: string;
+    ventas: number;
+}
+
+interface FormattedConsultationData {
+    name: string;
+    consultas: number;
+}
+
 interface ConsultationsAnalyticsResponse {
     consultations_by_date: ConsultationData[];
     summary: {
@@ -52,8 +62,8 @@ interface AnalyticsChartsProps {
 
 export default function AnalyticsCharts({ veterinaryId }: AnalyticsChartsProps) {
     const [filterPeriod, setFilterPeriod] = React.useState<'week' | 'month' | 'year'>('month');
-    const [salesData, setSalesData] = React.useState<SalesData[]>([]);
-    const [consultationsData, setConsultationsData] = React.useState<ConsultationData[]>([]);
+    const [salesData, setSalesData] = React.useState<FormattedSalesData[]>([]);
+    const [consultationsData, setConsultationsData] = React.useState<FormattedConsultationData[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
 
@@ -132,7 +142,7 @@ export default function AnalyticsCharts({ veterinaryId }: AnalyticsChartsProps) 
             }
 
             // Formatear datos de ventas para la gráfica
-            const formattedSalesData = processedSalesData.map((item) => ({
+            const formattedSalesData: FormattedSalesData[] = processedSalesData.map((item) => ({
                 name: formatDate(item.date),
                 ventas: item.total_amount || 0,
             }));
@@ -144,7 +154,7 @@ export default function AnalyticsCharts({ veterinaryId }: AnalyticsChartsProps) 
             }
 
             // Formatear datos de consultas para la gráfica
-            const formattedConsultationsData = processedConsultationsData.map((item) => ({
+            const formattedConsultationsData: FormattedConsultationData[] = processedConsultationsData.map((item) => ({
                 name: formatDate(item.date),
                 consultas: item.total_consultations || 0,
             }));
