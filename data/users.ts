@@ -142,7 +142,7 @@ export const usersDataSource: DataSource<User> = {
             throw new Error(resJson.message || resJson.error || 'Error al eliminar el usuario');
         }
 
-        return { success: true };
+        // No retornar nada, el tipo esperado es void
     },
     validate: z.object({
         name: z.string({ required_error: 'El nombre es requerido' }).min(1, 'El nombre es requerido'),
