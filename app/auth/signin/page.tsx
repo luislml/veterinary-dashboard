@@ -120,7 +120,7 @@ export default function SignIn() {
                             letterSpacing: '0.5px',
                         }}
                     >
-                        Red veterinaria
+                        RedVeterinaria
                     </Typography>
                 </Box>
 
