@@ -4,11 +4,6 @@
 
 import { API_CONFIG } from './config';
 
-// En desarrollo, ignorar errores de certificado SSL (solo para desarrollo local)
-if (process.env.NODE_ENV !== 'production' && typeof process !== 'undefined') {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
-
 export interface LoginResponse {
     user?: {
         id: string | number;
@@ -61,12 +56,12 @@ export async function loginWithAPI(email: string, password: string): Promise<Log
             }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
             const error: ApiError = {
-                message: data.message || 'Error al iniciar sesión',
-                errors: data.errors,
+                message: (data as ApiError).message || 'Error al iniciar sesión',
+                errors: (data as ApiError).errors,
             };
             throw error;
         }
@@ -95,11 +90,11 @@ export async function getAuthenticatedUser(token: string): Promise<UserResponse>
             },
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
             throw {
-                message: data.message || 'Error al obtener el usuario',
+                message: (data as ApiError).message || 'Error al obtener el usuario',
             } as ApiError;
         }
 

@@ -25,6 +25,6 @@ export function getLogoutEndpoint(): string {
  * Obtiene la URL completa del endpoint de usuario autenticado
  */
 export function getUserEndpoint(): string {
-    return `${API_CONFIG.baseURL}/user`;
+    return `${API_CONFIG.baseURL}/users/me`;
 }
 
