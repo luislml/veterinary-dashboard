@@ -144,6 +144,3 @@ dist-ssr
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
-branch_structure.json
-temp_auto_push.bat
-temp_interactive_push.bat
